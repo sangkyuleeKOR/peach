@@ -243,7 +243,7 @@ export default function SheetDetailPage() {
             <tr className="no-print">
               <td colSpan={8} className="!p-2">
                 {adding ? (
-                  <div className="p-2 max-w-2xl">
+                  <div className="p-2">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-lg font-bold">보낼 사람</p>
                       <button
