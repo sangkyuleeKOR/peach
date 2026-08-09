@@ -82,22 +82,23 @@ export default function SalesPage() {
   const maxProductRevenue = Math.max(1, ...stats.products.map(([, p]) => p.revenue));
   const label = month === "all" ? `${year}년 전체` : `${year}년 ${month}월`;
 
-  const chip = (selected: boolean) =>
-    `rounded-xl px-4 py-2.5 text-lg font-bold cursor-pointer transition-colors ${
-      selected ? "bg-peach text-white" : "bg-white border-2 border-line text-stone-600 hover:border-peach"
-    }`;
-
   return (
     <main>
-      <PageTitle sub="발주서에 적은 수량과 상품 가격으로 계산해요">매출</PageTitle>
-
-      {/* 연도 고르기 */}
-      <div className="flex gap-2 mb-3 flex-wrap" role="group" aria-label="연도 선택">
-        {years.map((y) => (
-          <button key={y} onClick={() => setYear(y)} className={chip(year === y)}>
-            {y}년
-          </button>
-        ))}
+      <div className="flex items-start justify-between gap-4">
+        <PageTitle sub="발주서에 적은 수량과 상품 가격으로 계산해요">매출</PageTitle>
+        {/* 연도 선택 */}
+        <select
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+          aria-label="연도 선택"
+          className="shrink-0 h-14 rounded-xl border-2 border-line bg-white px-3 text-lg font-bold cursor-pointer"
+        >
+          {years.map((y) => (
+            <option key={y} value={y}>
+              {y}년
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* 달 고르기 — 달력처럼 줄 맞춰서. 발주서 있는 달엔 점이 찍혀요 */}
@@ -147,19 +148,21 @@ export default function SalesPage() {
         <EmptyState title={`${label}에는 발주서가 없어요`} />
       ) : (
         <>
-          {/* 큰 숫자 */}
-          <div className="grid gap-4 sm:grid-cols-3 mb-8">
+          {/* 큰 숫자: 매출 하나만 크게, 나머지는 반 폭으로 */}
+          <div className="mb-8 space-y-4">
             <div className="rounded-2xl bg-peach text-white p-6">
               <p className="text-lg font-bold text-orange-100">{label} 매출</p>
-              <p className="mt-1 text-3xl font-bold tabular">{won(stats.total.revenue)}</p>
+              <p className="mt-1 text-4xl font-bold tabular">{won(stats.total.revenue)}</p>
             </div>
-            <div className="rounded-2xl bg-white border-2 border-line p-6">
-              <p className="text-lg font-bold text-stone-500">보낸 박스</p>
-              <p className="mt-1 text-3xl font-bold tabular">{stats.total.boxes}박스</p>
-            </div>
-            <div className="rounded-2xl bg-white border-2 border-line p-6">
-              <p className="text-lg font-bold text-stone-500">발주서</p>
-              <p className="mt-1 text-3xl font-bold tabular">{stats.total.sheets}장</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-2xl bg-white border border-line px-5 py-4">
+                <p className="text-base font-bold text-stone-500">보낸 박스</p>
+                <p className="mt-0.5 text-2xl font-bold tabular">{stats.total.boxes}박스</p>
+              </div>
+              <div className="rounded-2xl bg-white border border-line px-5 py-4">
+                <p className="text-base font-bold text-stone-500">발주서</p>
+                <p className="mt-0.5 text-2xl font-bold tabular">{stats.total.sheets}장</p>
+              </div>
             </div>
           </div>
 

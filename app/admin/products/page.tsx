@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PackagePlus, Pencil, Trash2 } from "lucide-react";
+import { ChevronRight, PackagePlus, Pencil, Trash2 } from "lucide-react";
 import { BigButton, EmptyState, Field, Loading, PageTitle, inputClass } from "@/components/ui";
 import { useDB } from "@/lib/store";
 import type { Product, ProductInput } from "@/lib/types";
@@ -18,13 +18,28 @@ export default function ProductsPage() {
   function remove(p: Product) {
     if (!window.confirm(`"${p.name}" 상품을 지울까요?`)) return;
     deleteProduct(p.id);
+    setEditing(null);
   }
 
   return (
     <main>
       <div className="flex items-start justify-between gap-4">
         <PageTitle sub="여기 등록한 상품을 발주서에서 골라요">상품</PageTitle>
-        <BigButton onClick={() => setEditing({ mode: "new" })} className="shrink-0 whitespace-nowrap">
+        {/* 컴퓨터: 제목 오른쪽 버튼 */}
+        <div className="hidden sm:block shrink-0">
+          <BigButton onClick={() => setEditing({ mode: "new" })} className="whitespace-nowrap">
+            <PackagePlus className="w-6 h-6" aria-hidden /> 새 상품 추가
+          </BigButton>
+        </div>
+      </div>
+
+      {/* 휴대폰: 전체 폭 버튼 */}
+      <div className="sm:hidden mb-4">
+        <BigButton
+          variant="secondary"
+          onClick={() => setEditing({ mode: "new" })}
+          className="w-full"
+        >
           <PackagePlus className="w-6 h-6" aria-hidden /> 새 상품 추가
         </BigButton>
       </div>
@@ -39,7 +54,33 @@ export default function ProductsPage() {
           }
         />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-line bg-white">
+        <>
+        {/* 휴대폰: 카드 — 누르면 수정 창이 열림 */}
+        <div className="sm:hidden space-y-3">
+          {db.products.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setEditing({ mode: "edit", product: p })}
+              className="w-full text-left rounded-2xl bg-white border border-line p-5 cursor-pointer hover:border-peach transition-colors"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xl font-bold">{p.name}</p>
+                <span className="flex items-center gap-2 shrink-0">
+                  <span className="tabular text-lg text-stone-600">
+                    {p.price ? `${p.price.toLocaleString("ko-KR")}원` : "—"}
+                  </span>
+                  <ChevronRight className="w-6 h-6 text-stone-300" aria-hidden />
+                </span>
+              </div>
+            </button>
+          ))}
+          <p className="text-center text-base text-stone-500 pt-1">
+            상품을 누르면 이름과 가격을 고칠 수 있어요
+          </p>
+        </div>
+
+        {/* 태블릿·컴퓨터: 표 */}
+        <div className="hidden sm:block overflow-x-auto rounded-xl border border-line bg-white">
           <table className="excel-table">
             <thead>
               <tr>
@@ -56,33 +97,26 @@ export default function ProductsPage() {
                     {p.price ? `${p.price.toLocaleString("ko-KR")}원` : <span className="text-stone-400">—</span>}
                   </td>
                   <td>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setEditing({ mode: "edit", product: p })}
-                        className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg border border-line px-3 py-1.5 text-base font-bold cursor-pointer hover:border-peach hover:text-peach-dark"
-                      >
-                        <Pencil className="w-4 h-4 shrink-0" aria-hidden /> 수정
-                      </button>
-                      <button
-                        onClick={() => remove(p)}
-                        aria-label={`${p.name} 삭제`}
-                        className="inline-flex items-center rounded-lg border border-red-200 text-red-600 px-3 py-1.5 text-base cursor-pointer hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" aria-hidden />
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => setEditing({ mode: "edit", product: p })}
+                      className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg border border-line px-3 py-1.5 text-base font-bold cursor-pointer hover:border-peach hover:text-peach-dark"
+                    >
+                      <Pencil className="w-4 h-4 shrink-0" aria-hidden /> 수정
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {editing && (
         <ProductDialog
           product={editing.mode === "edit" ? editing.product : undefined}
           onClose={() => setEditing(null)}
+          onDelete={editing.mode === "edit" ? () => remove(editing.product) : undefined}
           onSave={async (data) => {
             const ok =
               editing.mode === "edit"
@@ -100,10 +134,12 @@ function ProductDialog({
   product,
   onClose,
   onSave,
+  onDelete,
 }: {
   product?: Product;
   onClose: () => void;
   onSave: (data: ProductInput) => void;
+  onDelete?: () => void;
 }) {
   const [name, setName] = useState(product?.name ?? "");
   const [price, setPrice] = useState(product?.price ? String(product.price) : "");
@@ -155,6 +191,14 @@ function ProductDialog({
             저장
           </BigButton>
         </div>
+        {onDelete && (
+          <button
+            onClick={onDelete}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border-2 border-red-200 text-red-600 text-lg font-bold py-3 cursor-pointer hover:bg-red-50"
+          >
+            <Trash2 className="w-5 h-5" aria-hidden /> 이 상품 지우기
+          </button>
+        )}
       </div>
     </div>
   );

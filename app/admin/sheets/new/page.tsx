@@ -66,7 +66,7 @@ export default function NewSheetPage() {
           </h2>
           <input
             type="date"
-            className={`${inputClass} max-w-xs text-xl`}
+            className={`${inputClass} w-full sm:max-w-xs text-xl`}
             value={date}
             onChange={(e) => setDate(e.target.value)}
             aria-label="발주 날짜"
@@ -194,25 +194,29 @@ export default function NewSheetPage() {
           )}
         </section>
 
-        {/* ④ 메모 + 저장 */}
-        <section className="rounded-2xl bg-white border border-line p-6 space-y-5">
+        {/* ④ 메모 */}
+        <section className="rounded-2xl bg-white border border-line p-6">
           <Field label="메모" hint="예: 월요일 발송분, 후숙 조금 더 된 것">
             <input className={inputClass} value={memo} onChange={(e) => setMemo(e.target.value)} />
           </Field>
-          {error && (
-            <p role="alert" className="rounded-xl bg-red-50 border border-red-200 text-red-700 text-lg px-4 py-3">
-              {error}
-            </p>
-          )}
-          <div className="flex gap-3">
-            <BigButton variant="secondary" onClick={() => router.back()} className="flex-1">
-              취소
-            </BigButton>
-            <BigButton onClick={save} disabled={saving} className="flex-[2] text-xl">
-              {saving ? "저장하는 중…" : "발주서 저장하기"}
-            </BigButton>
-          </div>
         </section>
+      </div>
+
+      {/* 저장 바 — 스크롤해도 화면 아래에 붙어 있음 */}
+      <div className="sticky bottom-24 lg:bottom-6 z-10 mt-6">
+        {error && (
+          <p role="alert" className="mb-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-lg px-4 py-3">
+            {error}
+          </p>
+        )}
+        <div className="flex items-center gap-4 rounded-2xl bg-white border border-line shadow-lg px-5 py-3.5">
+          <span className="text-xl font-bold whitespace-nowrap tabular">
+            {items.length}명 · {totalBoxes}박스
+          </span>
+          <BigButton onClick={save} disabled={saving} className="flex-1 text-xl">
+            {saving ? "저장하는 중…" : "발주서 저장하기"}
+          </BigButton>
+        </div>
       </div>
     </main>
   );

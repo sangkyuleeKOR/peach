@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowLeft, CircleCheck, Download, Printer, Trash2, UserPlus } from "lucide-react";
 import { PersonPicker } from "@/components/person-picker";
@@ -14,7 +14,8 @@ import type { OrderSheet, Person, SheetItem } from "@/lib/types";
 export default function SheetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const sheetId = Number(id);
-  const { db, loadError, updateSheet } = useDB();
+  const router = useRouter();
+  const { db, loadError, updateSheet, deleteSheet } = useDB();
   const [adding, setAdding] = useState(false);
 
   if (!db) return <Loading error={loadError} />;
@@ -90,20 +91,20 @@ export default function SheetDetailPage() {
         <StatusBadge status={sheet.status} />
       </div>
 
-      {/* 도구 버튼들 */}
-      <div className="no-print flex flex-wrap gap-3 mb-6">
+      {/* 도구 버튼: 휴대폰은 2×2 같은 크기, 넓은 화면은 한 줄 */}
+      <div className="no-print grid grid-cols-2 gap-3 mb-6 sm:flex sm:flex-wrap">
         <BigButton variant="secondary" onClick={() => window.print()}>
-          <Printer className="w-6 h-6" aria-hidden /> 인쇄하기
+          <Printer className="w-6 h-6" aria-hidden /> 인쇄
         </BigButton>
         <BigButton variant="secondary" onClick={downloadCsv}>
-          <Download className="w-6 h-6" aria-hidden /> 엑셀로 내려받기
+          <Download className="w-6 h-6" aria-hidden /> 엑셀 받기
         </BigButton>
         <BigButton variant="secondary" onClick={() => setAdding((v) => !v)}>
           <UserPlus className="w-6 h-6" aria-hidden /> 사람 추가
         </BigButton>
         {sheet.status === "작성중" ? (
           <BigButton onClick={() => patchSheet({ status: "발송완료" })}>
-            <CircleCheck className="w-6 h-6" aria-hidden /> 발송 완료로 표시
+            <CircleCheck className="w-6 h-6" aria-hidden /> 발송 완료
           </BigButton>
         ) : (
           <BigButton variant="ghost" onClick={() => patchSheet({ status: "작성중" })}>
@@ -162,7 +163,10 @@ export default function SheetDetailPage() {
             </div>
           </div>
         ))}
-        <p className="text-right text-xl font-bold pr-1">합계 {totalBoxes}박스</p>
+        {/* 합계 — 스크롤해도 화면 아래에 붙어 있음 */}
+        <div className="sticky bottom-24 z-10 rounded-2xl bg-white border border-line shadow-lg px-5 py-3.5 text-center text-xl font-bold tabular">
+          {sheet.items.length}명 · 합계 {totalBoxes}박스
+        </div>
       </div>
 
       {/* 태블릿·컴퓨터·인쇄: 엑셀식 표 */}
@@ -238,6 +242,18 @@ export default function SheetDetailPage() {
         </table>
       </div>
 
+      {/* 지우기: 목록에서 빼고 여기(발주서 안)에서만 */}
+      <div className="no-print mt-10">
+        <button
+          onClick={async () => {
+            if (!window.confirm(`${formatDateKorean(sheet.date)} 발주서를 완전히 지울까요?`)) return;
+            if (await deleteSheet(sheetId)) router.push("/admin/sheets");
+          }}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border-2 border-red-200 text-red-600 text-lg font-bold px-6 py-3 cursor-pointer hover:bg-red-50"
+        >
+          <Trash2 className="w-5 h-5" aria-hidden /> 이 발주서 지우기
+        </button>
+      </div>
     </main>
   );
 }

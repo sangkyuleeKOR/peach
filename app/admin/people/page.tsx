@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pencil, Search, Trash2, UserPlus } from "lucide-react";
+import { ChevronRight, Pencil, Search, Trash2, UserPlus } from "lucide-react";
 import { BigButton, EmptyState, Field, Loading, PageTitle, inputClass } from "@/components/ui";
 import { formatPhone, formatPhoneInput } from "@/lib/format";
 import { useDB } from "@/lib/store";
@@ -9,7 +9,7 @@ import type { Person, PersonInput } from "@/lib/types";
 
 type Editing = { mode: "new" } | { mode: "edit"; person: Person } | null;
 
-/** 주소록: 엑셀 표 그대로 + 이름 검색 + 추가/수정/삭제 */
+/** 주소록: 이름 검색 + 추가/수정/삭제. 휴대폰은 카드(누르면 수정), 컴퓨터는 엑셀식 표 */
 export default function PeoplePage() {
   const { db, loadError, addPerson, updatePerson, deletePerson } = useDB();
   const [query, setQuery] = useState("");
@@ -35,27 +35,44 @@ export default function PeoplePage() {
   function remove(p: Person) {
     if (!window.confirm(`${p.name} 님을 주소록에서 지울까요?`)) return;
     deletePerson(p.id);
+    setEditing(null);
   }
 
   return (
     <main>
       <div className="flex items-start justify-between gap-4">
         <PageTitle sub={`모두 ${db.people.length}명`}>주소록</PageTitle>
-        <BigButton onClick={() => setEditing({ mode: "new" })} className="shrink-0 whitespace-nowrap">
-          <UserPlus className="w-6 h-6" aria-hidden /> 새 사람 추가
-        </BigButton>
+        {/* 컴퓨터: 제목 오른쪽 버튼 */}
+        <div className="hidden sm:block shrink-0">
+          <BigButton onClick={() => setEditing({ mode: "new" })} className="whitespace-nowrap">
+            <UserPlus className="w-6 h-6" aria-hidden /> 새 사람 추가
+          </BigButton>
+        </div>
       </div>
 
-      {/* 검색 */}
-      <div className="relative mb-5">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-stone-400" aria-hidden />
-        <input
-          className={`${inputClass} pl-12 text-xl`}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="이름이나 전화번호로 검색"
-          aria-label="주소록 검색"
-        />
+      {/* 검색 — 휴대폰에선 스크롤해도 위에 고정 */}
+      <div className="max-sm:sticky max-sm:top-16 max-sm:z-10 max-sm:bg-paper max-sm:pb-2 mb-3 sm:mb-5">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-stone-400" aria-hidden />
+          <input
+            className={`${inputClass} pl-12 text-xl`}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="이름이나 전화번호로 검색"
+            aria-label="주소록 검색"
+          />
+        </div>
+      </div>
+
+      {/* 휴대폰: 전체 폭 추가 버튼 */}
+      <div className="sm:hidden mb-4">
+        <BigButton
+          variant="secondary"
+          onClick={() => setEditing({ mode: "new" })}
+          className="w-full"
+        >
+          <UserPlus className="w-6 h-6" aria-hidden /> 새 사람 추가
+        </BigButton>
       </div>
 
       {filtered.length === 0 ? (
@@ -69,36 +86,28 @@ export default function PeoplePage() {
         />
       ) : (
         <>
-        {/* 휴대폰: 카드 목록 (옆으로 밀 필요 없음) */}
+        {/* 휴대폰: 카드 — 누르면 수정 창이 열림 */}
         <div className="sm:hidden space-y-3">
           {filtered.map((p) => (
-            <div key={p.id} className="rounded-2xl bg-white border border-line p-5">
-              <div className="flex items-start justify-between gap-3">
+            <button
+              key={p.id}
+              onClick={() => setEditing({ mode: "edit", person: p })}
+              className="w-full text-left rounded-2xl bg-white border border-line p-5 cursor-pointer hover:border-peach transition-colors"
+            >
+              <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xl font-bold">{p.name}</p>
-                  <p className="tabular text-lg text-stone-600">
-                    {p.phone ? formatPhone(p.phone) : <span className="text-stone-400">전화번호 없음</span>}
+                  <p className="text-xl font-bold">
+                    {p.name}
+                    <span className="ml-3 tabular text-lg font-normal text-stone-600">
+                      {p.phone ? formatPhone(p.phone) : ""}
+                    </span>
                   </p>
+                  <p className="mt-1 text-lg text-stone-600 truncate">{p.address}</p>
+                  {p.referrer && <p className="text-base text-stone-400">소개: {p.referrer}</p>}
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <button
-                    onClick={() => setEditing({ mode: "edit", person: p })}
-                    className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg border border-line px-3 py-2 text-base font-bold cursor-pointer hover:border-peach hover:text-peach-dark"
-                  >
-                    <Pencil className="w-4 h-4 shrink-0" aria-hidden /> 수정
-                  </button>
-                  <button
-                    onClick={() => remove(p)}
-                    aria-label={`${p.name} 삭제`}
-                    className="inline-flex items-center rounded-lg border border-red-200 text-red-600 px-3 py-2 cursor-pointer hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4" aria-hidden />
-                  </button>
-                </div>
+                <ChevronRight className="w-6 h-6 shrink-0 text-stone-300" aria-hidden />
               </div>
-              <p className="mt-2 text-lg text-stone-700">{p.address}</p>
-              {p.referrer && <p className="mt-1 text-base text-stone-500">소개: {p.referrer}</p>}
-            </div>
+            </button>
           ))}
         </div>
 
@@ -124,21 +133,12 @@ export default function PeoplePage() {
                     {p.referrer || <span className="text-stone-400">—</span>}
                   </td>
                   <td>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setEditing({ mode: "edit", person: p })}
-                        className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg border border-line px-3 py-1.5 text-base font-bold cursor-pointer hover:border-peach hover:text-peach-dark"
-                      >
-                        <Pencil className="w-4 h-4 shrink-0" aria-hidden /> 수정
-                      </button>
-                      <button
-                        onClick={() => remove(p)}
-                        aria-label={`${p.name} 삭제`}
-                        className="inline-flex items-center rounded-lg border border-red-200 text-red-600 px-3 py-1.5 text-base cursor-pointer hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" aria-hidden />
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => setEditing({ mode: "edit", person: p })}
+                      className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg border border-line px-3 py-1.5 text-base font-bold cursor-pointer hover:border-peach hover:text-peach-dark"
+                    >
+                      <Pencil className="w-4 h-4 shrink-0" aria-hidden /> 수정
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -152,6 +152,7 @@ export default function PeoplePage() {
         <PersonDialog
           person={editing.mode === "edit" ? editing.person : undefined}
           onClose={() => setEditing(null)}
+          onDelete={editing.mode === "edit" ? () => remove(editing.person) : undefined}
           onSave={async (data) => {
             const ok =
               editing.mode === "edit"
@@ -169,10 +170,12 @@ function PersonDialog({
   person,
   onClose,
   onSave,
+  onDelete,
 }: {
   person?: Person;
   onClose: () => void;
   onSave: (data: PersonInput) => void;
+  onDelete?: () => void;
 }) {
   const [name, setName] = useState(person?.name ?? "");
   const [phone, setPhone] = useState(person?.phone ?? "");
@@ -226,6 +229,14 @@ function PersonDialog({
             저장
           </BigButton>
         </div>
+        {onDelete && (
+          <button
+            onClick={onDelete}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border-2 border-red-200 text-red-600 text-lg font-bold py-3 cursor-pointer hover:bg-red-50"
+          >
+            <Trash2 className="w-5 h-5" aria-hidden /> 주소록에서 지우기
+          </button>
+        )}
       </div>
     </div>
   );
