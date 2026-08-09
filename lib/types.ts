@@ -31,6 +31,7 @@ export type SheetItem = {
   product: string; // 상품명 스냅샷
   quantity: number; // 박스 수량
   memo?: string;
+  done?: boolean; // 이 줄 발송 확인 체크
 };
 
 /** 발주서 — "xxxx년 x월 x일 발주서" */

@@ -54,19 +54,28 @@ export default function SheetDetailPage() {
     });
   }
 
-  /** 엑셀에서 바로 열리는 CSV 파일로 내려받기 */
-  function downloadCsv() {
+  /** 엑셀에서 바로 열리는 CSV 파일로 내려받기 — 전체 또는 택배기사 발송용 */
+  function downloadCsv(kind: "full" | "courier") {
     const esc = (v: string | number) => `"${String(v ?? "").replaceAll('"', '""')}"`;
-    const rows = [
-      ["날짜", "이름", "휴대전화", "주소", "상품", "수량", "메모"],
-      ...sheet!.items.map((i) => [sheet!.date, i.name, i.phone, i.address, i.product, i.quantity, i.memo ?? ""]),
-    ];
+    const rows =
+      kind === "courier"
+        ? [
+            // 원래 쓰시던 발주서 엑셀과 같은 열 구성
+            ["날짜", "이름", "휴대전화", "주소", "수량"],
+            ...sheet!.items.map((i) => [sheet!.date, i.name, i.phone, i.address, i.quantity]),
+          ]
+        : [
+            ["날짜", "이름", "휴대전화", "주소", "상품", "수량", "메모", "발송확인"],
+            ...sheet!.items.map((i) => [
+              sheet!.date, i.name, i.phone, i.address, i.product, i.quantity, i.memo ?? "", i.done ? "완료" : "",
+            ]),
+          ];
     // ﻿(BOM)이 있어야 엑셀이 한글을 제대로 읽는다
     const csv = "\uFEFF" + rows.map((r) => r.map(esc).join(",")).join("\r\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${formatDateKorean(sheet!.date)} 발주서.csv`;
+    a.download = `${formatDateKorean(sheet!.date)} 발주서${kind === "courier" ? " (택배용)" : ""}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -86,10 +95,13 @@ export default function SheetDetailPage() {
         {sheet.memo && <p className="mt-1 text-lg text-stone-500">{sheet.memo}</p>}
       </div>
 
-      {/* 도구: 엑셀 받기 (발송 완료는 휴대폰에선 하단 고정) */}
+      {/* 도구: 엑셀 받기 2종 (발송 완료는 휴대폰에선 하단 고정) */}
       <div className="no-print flex gap-3 mb-6 flex-wrap">
-        <BigButton variant="secondary" onClick={downloadCsv} className="flex-1 sm:flex-none">
-          <Download className="w-6 h-6" aria-hidden /> 엑셀로 받기
+        <BigButton variant="secondary" onClick={() => downloadCsv("courier")} className="flex-1 sm:flex-none">
+          <Download className="w-6 h-6" aria-hidden /> 택배용 엑셀
+        </BigButton>
+        <BigButton variant="secondary" onClick={() => downloadCsv("full")} className="flex-1 sm:flex-none">
+          <Download className="w-6 h-6" aria-hidden /> 전체 엑셀
         </BigButton>
         <div className="hidden sm:block">
           {sheet.status === "작성중" ? (
@@ -111,9 +123,10 @@ export default function SheetDetailPage() {
           <table className="excel-table table-fixed w-full">
             <thead>
               <tr>
+                <th className="w-11 text-center">✓</th>
                 <th className="w-24">이름</th>
                 <th>상품</th>
-                <th className="w-16 text-center">수량</th>
+                <th className="w-14 text-center">수량</th>
               </tr>
             </thead>
             <tbody>
@@ -121,8 +134,17 @@ export default function SheetDetailPage() {
                 <tr
                   key={i.id}
                   onClick={() => setEditingItemId(i.id)}
-                  className="cursor-pointer"
+                  className={`cursor-pointer ${i.done ? "bg-green-50" : ""}`}
                 >
+                  <td className="!px-1 text-center" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={!!i.done}
+                      onChange={() => patchItem(i.id, { done: !i.done })}
+                      aria-label={`${i.name} 발송 확인`}
+                      className="w-6 h-6 align-middle accent-leaf cursor-pointer"
+                    />
+                  </td>
                   <td className="font-bold">{i.name}</td>
                   <td className="text-base">{i.product || "—"}</td>
                   <td className="tabular text-center">{i.quantity}</td>
@@ -130,7 +152,7 @@ export default function SheetDetailPage() {
               ))}
               {/* 사람 추가 — 표의 마지막 줄에서 바로 */}
               <tr className="no-print">
-                <td colSpan={3} className="!p-2">
+                <td colSpan={4} className="!p-2">
                   {adding ? (
                     <div className="p-2">
                       <div className="flex items-center justify-between mb-2">
@@ -157,7 +179,7 @@ export default function SheetDetailPage() {
             </tbody>
             <tfoot>
               <tr>
-                <td className="font-bold">합계</td>
+                <td colSpan={2} className="font-bold">합계</td>
                 <td className="font-bold text-right">{sheet.items.length}명</td>
                 <td className="font-bold tabular text-center">{totalBoxes}</td>
               </tr>
@@ -171,6 +193,7 @@ export default function SheetDetailPage() {
         <table className="excel-table">
           <thead>
             <tr>
+              <th className="no-print w-[1%] text-center">✓</th>
               <th className="w-[1%]">번호</th>
               <th className="w-[1%]">이름</th>
               <th className="w-[1%]">휴대전화</th>
@@ -182,7 +205,16 @@ export default function SheetDetailPage() {
           </thead>
           <tbody>
             {sheet.items.map((i, idx) => (
-              <tr key={i.id}>
+              <tr key={i.id} className={i.done ? "bg-green-50" : ""}>
+                <td className="no-print text-center">
+                  <input
+                    type="checkbox"
+                    checked={!!i.done}
+                    onChange={() => patchItem(i.id, { done: !i.done })}
+                    aria-label={`${i.name} 발송 확인`}
+                    className="w-6 h-6 align-middle accent-leaf cursor-pointer"
+                  />
+                </td>
                 <td className="tabular text-center">{idx + 1}</td>
                 <td className="font-bold whitespace-nowrap">{i.name}</td>
                 <td className="tabular whitespace-nowrap">{formatPhone(i.phone)}</td>
@@ -227,7 +259,7 @@ export default function SheetDetailPage() {
             ))}
             {/* 사람 추가 — 표의 마지막 줄에서 바로 */}
             <tr className="no-print">
-              <td colSpan={7} className="!p-2">
+              <td colSpan={8} className="!p-2">
                 {adding ? (
                   <div className="p-2 max-w-2xl">
                     <div className="flex items-center justify-between mb-2">
@@ -254,7 +286,7 @@ export default function SheetDetailPage() {
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={5} className="font-bold text-right">
+              <td colSpan={6} className="font-bold text-right">
                 합계
               </td>
               <td className="font-bold tabular" colSpan={2}>
