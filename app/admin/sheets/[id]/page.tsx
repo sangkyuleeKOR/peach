@@ -123,10 +123,10 @@ export default function SheetDetailPage() {
           <table className="excel-table table-fixed w-full">
             <thead>
               <tr>
-                <th className="w-11 text-center">✓</th>
                 <th className="w-24">이름</th>
                 <th>상품</th>
                 <th className="w-14 text-center">수량</th>
+                <th className="w-16 text-center">발송</th>
               </tr>
             </thead>
             <tbody>
@@ -136,18 +136,18 @@ export default function SheetDetailPage() {
                   onClick={() => setEditingItemId(i.id)}
                   className={`cursor-pointer ${i.done ? "bg-green-50" : ""}`}
                 >
+                  <td className="font-bold">{i.name}</td>
+                  <td className="text-base">{i.product || "—"}</td>
+                  <td className="tabular text-center">{i.quantity}</td>
                   <td className="!px-1 text-center" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={!!i.done}
                       onChange={() => patchItem(i.id, { done: !i.done })}
-                      aria-label={`${i.name} 발송 확인`}
+                      aria-label={`${i.name} 발송 완료`}
                       className="w-6 h-6 align-middle accent-leaf cursor-pointer"
                     />
                   </td>
-                  <td className="font-bold">{i.name}</td>
-                  <td className="text-base">{i.product || "—"}</td>
-                  <td className="tabular text-center">{i.quantity}</td>
                 </tr>
               ))}
               {/* 사람 추가 — 표의 마지막 줄에서 바로 */}
@@ -169,7 +169,7 @@ export default function SheetDetailPage() {
                   ) : (
                     <button
                       onClick={() => setAdding(true)}
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line py-3 text-lg font-bold text-stone-400 cursor-pointer hover:border-peach hover:text-peach-dark transition-colors"
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-3 text-lg font-bold text-stone-400 cursor-pointer hover:bg-peach-soft hover:text-peach-dark transition-colors"
                     >
                       <UserPlus className="w-5 h-5" aria-hidden /> 사람 추가
                     </button>
@@ -179,9 +179,10 @@ export default function SheetDetailPage() {
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={2} className="font-bold">합계</td>
+                <td className="font-bold">합계</td>
                 <td className="font-bold text-right">{sheet.items.length}명</td>
                 <td className="font-bold tabular text-center">{totalBoxes}</td>
+                <td></td>
               </tr>
             </tfoot>
           </table>
@@ -193,28 +194,19 @@ export default function SheetDetailPage() {
         <table className="excel-table">
           <thead>
             <tr>
-              <th className="no-print w-[1%] text-center">✓</th>
               <th className="w-[1%]">번호</th>
               <th className="w-[1%]">이름</th>
               <th className="w-[1%]">휴대전화</th>
               <th>주소</th>
               <th className="w-[1%]">상품</th>
               <th className="w-[1%] print:w-16">수량</th>
+              <th className="no-print w-[1%] text-center">발송</th>
               <th className="no-print w-[1%]">삭제</th>
             </tr>
           </thead>
           <tbody>
             {sheet.items.map((i, idx) => (
               <tr key={i.id} className={i.done ? "bg-green-50" : ""}>
-                <td className="no-print text-center">
-                  <input
-                    type="checkbox"
-                    checked={!!i.done}
-                    onChange={() => patchItem(i.id, { done: !i.done })}
-                    aria-label={`${i.name} 발송 확인`}
-                    className="w-6 h-6 align-middle accent-leaf cursor-pointer"
-                  />
-                </td>
                 <td className="tabular text-center">{idx + 1}</td>
                 <td className="font-bold whitespace-nowrap">{i.name}</td>
                 <td className="tabular whitespace-nowrap">{formatPhone(i.phone)}</td>
@@ -242,6 +234,15 @@ export default function SheetDetailPage() {
                     <QuantityStepper value={i.quantity} onChange={(v) => patchItem(i.id, { quantity: v })} />
                   </span>
                   <span className="hidden print:inline tabular">{i.quantity}</span>
+                </td>
+                <td className="no-print text-center">
+                  <input
+                    type="checkbox"
+                    checked={!!i.done}
+                    onChange={() => patchItem(i.id, { done: !i.done })}
+                    aria-label={`${i.name} 발송 완료`}
+                    className="w-6 h-6 align-middle accent-leaf cursor-pointer"
+                  />
                 </td>
                 <td className="no-print">
                   <button
@@ -276,7 +277,7 @@ export default function SheetDetailPage() {
                 ) : (
                   <button
                     onClick={() => setAdding(true)}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line py-3 text-lg font-bold text-stone-400 cursor-pointer hover:border-peach hover:text-peach-dark transition-colors"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-3 text-lg font-bold text-stone-400 cursor-pointer hover:bg-peach-soft hover:text-peach-dark transition-colors"
                   >
                     <UserPlus className="w-5 h-5" aria-hidden /> 사람 추가
                   </button>
