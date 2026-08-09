@@ -14,10 +14,10 @@ export default function SheetsPage() {
 
   return (
     <main>
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+      <div className="flex items-start justify-between gap-4">
         <PageTitle sub="날짜별로 한 장씩 만들어요">발주서</PageTitle>
-        <Link href="/admin/sheets/new">
-          <BigButton>
+        <Link href="/admin/sheets/new" className="shrink-0">
+          <BigButton className="whitespace-nowrap">
             <FilePlus2 className="w-6 h-6" aria-hidden /> 새 발주서 만들기
           </BigButton>
         </Link>

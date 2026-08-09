@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 import { ArrowLeft, CircleCheck, Download, Printer, Trash2, UserPlus } from "lucide-react";
 import { PersonPicker } from "@/components/person-picker";
@@ -14,8 +14,7 @@ import type { OrderSheet, Person, SheetItem } from "@/lib/types";
 export default function SheetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const sheetId = Number(id);
-  const router = useRouter();
-  const { db, loadError, updateSheet, deleteSheet } = useDB();
+  const { db, loadError, updateSheet } = useDB();
   const [adding, setAdding] = useState(false);
 
   if (!db) return <Loading error={loadError} />;
@@ -145,7 +144,7 @@ export default function SheetDetailPage() {
             <p className="mt-2 text-lg text-stone-700">{i.address}</p>
             <div className="mt-3 flex items-center gap-3 flex-wrap">
               <select
-                className="rounded-lg border border-line px-2 py-2.5 text-base bg-white cursor-pointer"
+                className="h-14 rounded-xl border-2 border-line px-3 text-lg bg-white cursor-pointer"
                 value={i.product}
                 onChange={(e) => patchItem(i.id, { product: e.target.value })}
                 aria-label={`${i.name} 상품`}
@@ -189,7 +188,7 @@ export default function SheetDetailPage() {
                 <td className="text-base">{i.address}</td>
                 <td>
                   <select
-                    className="no-print rounded-lg border border-line px-2 py-2 text-base bg-white cursor-pointer"
+                    className="no-print h-14 rounded-xl border-2 border-line px-3 text-lg bg-white cursor-pointer"
                     value={i.product}
                     onChange={(e) => patchItem(i.id, { product: e.target.value })}
                     aria-label={`${i.name} 상품`}
@@ -239,17 +238,6 @@ export default function SheetDetailPage() {
         </table>
       </div>
 
-      <div className="no-print mt-8 text-right">
-        <button
-          onClick={async () => {
-            if (!window.confirm("이 발주서를 완전히 지울까요?")) return;
-            if (await deleteSheet(sheetId)) router.push("/admin/sheets");
-          }}
-          className="text-red-600 text-lg underline underline-offset-4 cursor-pointer"
-        >
-          발주서 지우기
-        </button>
-      </div>
     </main>
   );
 }

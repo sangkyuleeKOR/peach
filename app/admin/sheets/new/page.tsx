@@ -116,7 +116,7 @@ export default function NewSheetPage() {
                   </div>
                   <div className="mt-3 flex items-center gap-3 flex-wrap">
                     <select
-                      className="rounded-lg border border-line px-2 py-2.5 text-base bg-white cursor-pointer"
+                      className="h-14 rounded-xl border-2 border-line px-3 text-lg bg-white cursor-pointer"
                       value={i.product}
                       onChange={(e) => patchItem(i.id, { product: e.target.value })}
                       aria-label={`${i.name} 상품`}
@@ -155,7 +155,7 @@ export default function NewSheetPage() {
                       <td className="text-base">{i.address}</td>
                       <td>
                         <select
-                          className="rounded-lg border border-line px-2 py-2 text-base bg-white cursor-pointer"
+                          className="h-14 rounded-xl border-2 border-line px-3 text-lg bg-white cursor-pointer"
                           value={i.product}
                           onChange={(e) => patchItem(i.id, { product: e.target.value })}
                           aria-label={`${i.name} 상품`}
