@@ -141,11 +141,11 @@ export default function NewSheetPage() {
               <table className="excel-table">
                 <thead>
                   <tr>
-                    <th className="w-24">이름</th>
+                    <th className="w-[1%]">이름</th>
                     <th>주소</th>
-                    <th className="w-32">상품</th>
-                    <th className="w-44">수량</th>
-                    <th className="w-16">빼기</th>
+                    <th className="w-[1%]">상품</th>
+                    <th className="w-[1%]">수량</th>
+                    <th className="w-[1%]">빼기</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -171,9 +171,9 @@ export default function SalesPage() {
                 <table className="excel-table">
                   <thead>
                     <tr>
-                      <th className="w-20">달</th>
-                      <th className="w-24">박스</th>
-                      <th className="w-36">매출</th>
+                      <th className="w-[1%]">달</th>
+                      <th className="w-[1%]">박스</th>
+                      <th className="w-[1%]">매출</th>
                       <th>
                         <span className="sr-only">매출 크기 비교</span>
                       </th>
@@ -223,9 +223,9 @@ export default function SalesPage() {
               <table className="excel-table">
                 <thead>
                   <tr>
-                    <th className="w-44">상품</th>
-                    <th className="w-24">박스</th>
-                    <th className="w-36">매출</th>
+                    <th className="w-[1%]">상품</th>
+                    <th className="w-[1%]">박스</th>
+                    <th className="w-[1%]">매출</th>
                     <th className="hidden sm:table-cell">
                       <span className="sr-only">매출 크기 비교</span>
                     </th>
@@ -234,7 +234,7 @@ export default function SalesPage() {
                 <tbody>
                   {stats.products.map(([name, p]) => (
                     <tr key={name}>
-                      <td className="font-bold">{name || "상품 없음"}</td>
+                      <td className="font-bold whitespace-nowrap">{name || "상품 없음"}</td>
                       <td className="tabular">{p.boxes}</td>
                       <td className="tabular whitespace-nowrap">{won(p.revenue)}</td>
                       <td className="hidden sm:table-cell w-full min-w-40">

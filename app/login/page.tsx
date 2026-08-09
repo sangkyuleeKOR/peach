@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BigButton, Field, inputClass } from "@/components/ui";
+import { formatPhoneInput } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 
 /** 전화번호를 아이디처럼 쓴다 — 내부적으로 가짜 이메일로 바꿔 로그인 */
@@ -58,7 +59,7 @@ export default function LoginPage() {
               type="tel"
               inputMode="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(formatPhoneInput(e.target.value))}
               placeholder="010-0000-0000"
               autoComplete="tel"
             />

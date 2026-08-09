@@ -34,10 +34,12 @@ async function fetchAllPeople(supabase: ReturnType<typeof createClient>): Promis
   const pageSize = 1000;
   const rows: PersonRow[] = [];
   for (let from = 0; ; from += pageSize) {
+    // 정렬은 고유번호 기준 — 이름 기준으로 나눠 받으면 동명이인이
+    // 페이지 경계에서 빠질 수 있다 (이름 정렬은 화면에서 한다)
     const { data, error } = await supabase
       .from("people")
       .select("*")
-      .order("name")
+      .order("id")
       .range(from, from + pageSize - 1);
     if (error) throw error;
     rows.push(...((data ?? []) as PersonRow[]));

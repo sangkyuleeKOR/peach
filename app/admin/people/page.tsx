@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Pencil, Search, Trash2, UserPlus } from "lucide-react";
 import { BigButton, EmptyState, Field, Loading, PageTitle, inputClass } from "@/components/ui";
+import { formatPhone, formatPhoneInput } from "@/lib/format";
 import { useDB } from "@/lib/store";
 import type { Person, PersonInput } from "@/lib/types";
 
@@ -16,10 +17,14 @@ export default function PeoplePage() {
 
   const filtered = useMemo(() => {
     if (!db) return [];
-    const q = query.trim();
+    const q = query.trim().normalize("NFC");
+    const digits = q.replace(/\D/g, "");
     const list = q
       ? db.people.filter(
-          (p) => p.name.includes(q) || p.phone.includes(q) || p.referrer.includes(q),
+          (p) =>
+            p.name.normalize("NFC").includes(q) ||
+            (digits && p.phone.replace(/\D/g, "").includes(digits)) ||
+            p.referrer.normalize("NFC").includes(q),
         )
       : db.people;
     return [...list].sort((a, b) => a.name.localeCompare(b.name, "ko"));
@@ -72,7 +77,7 @@ export default function PeoplePage() {
                 <div className="min-w-0">
                   <p className="text-xl font-bold">{p.name}</p>
                   <p className="tabular text-lg text-stone-600">
-                    {p.phone || <span className="text-stone-400">전화번호 없음</span>}
+                    {p.phone ? formatPhone(p.phone) : <span className="text-stone-400">전화번호 없음</span>}
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
@@ -102,20 +107,22 @@ export default function PeoplePage() {
           <table className="excel-table">
             <thead>
               <tr>
-                <th className="w-28">이름</th>
-                <th className="w-44">휴대전화</th>
+                <th className="w-[1%]">이름</th>
+                <th className="w-[1%]">휴대전화</th>
                 <th>주소</th>
-                <th className="w-32">연고인</th>
-                <th className="w-36">관리</th>
+                <th className="w-[1%]">연고인</th>
+                <th className="w-[1%]">관리</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((p) => (
                 <tr key={p.id}>
                   <td className="font-bold whitespace-nowrap">{p.name}</td>
-                  <td className="tabular whitespace-nowrap">{p.phone}</td>
+                  <td className="tabular whitespace-nowrap">{formatPhone(p.phone)}</td>
                   <td>{p.address}</td>
-                  <td>{p.referrer || <span className="text-stone-400">—</span>}</td>
+                  <td className="whitespace-nowrap">
+                    {p.referrer || <span className="text-stone-400">—</span>}
+                  </td>
                   <td>
                     <div className="flex gap-2">
                       <button
@@ -190,7 +197,7 @@ function PersonDialog({
           <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} placeholder="홍길동" />
         </Field>
         <Field label="휴대전화" required>
-          <input className={inputClass} type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-0000-0000" />
+          <input className={inputClass} type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(formatPhoneInput(e.target.value))} placeholder="010-0000-0000" />
         </Field>
         <Field label="주소" required>
           <textarea className={`${inputClass} min-h-24`} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="도로명 주소와 동·호수까지" />

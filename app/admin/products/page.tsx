@@ -44,8 +44,8 @@ export default function ProductsPage() {
             <thead>
               <tr>
                 <th>상품명</th>
-                <th className="w-36">가격</th>
-                <th className="w-36">관리</th>
+                <th className="w-[1%]">가격</th>
+                <th className="w-[1%]">관리</th>
               </tr>
             </thead>
             <tbody>

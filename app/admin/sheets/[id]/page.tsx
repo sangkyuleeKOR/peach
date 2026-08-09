@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ArrowLeft, CircleCheck, Download, Printer, Trash2, UserPlus } from "lucide-react";
 import { PersonPicker } from "@/components/person-picker";
 import { BigButton, Loading, QuantityStepper, StatusBadge } from "@/components/ui";
+import { formatPhone } from "@/lib/format";
 import { formatDateKorean, newId, useDB } from "@/lib/store";
 import type { OrderSheet, Person, SheetItem } from "@/lib/types";
 
@@ -128,7 +129,7 @@ export default function SheetDetailPage() {
                   <span className="text-stone-400 tabular mr-1.5">{idx + 1}.</span>
                   {i.name}
                 </p>
-                <p className="tabular text-lg text-stone-600">{i.phone}</p>
+                <p className="tabular text-lg text-stone-600">{formatPhone(i.phone)}</p>
               </div>
               <button
                 onClick={() => {
@@ -170,13 +171,13 @@ export default function SheetDetailPage() {
         <table className="excel-table">
           <thead>
             <tr>
-              <th className="w-12">번호</th>
-              <th className="w-24">이름</th>
-              <th className="w-40">휴대전화</th>
+              <th className="w-[1%]">번호</th>
+              <th className="w-[1%]">이름</th>
+              <th className="w-[1%]">휴대전화</th>
               <th>주소</th>
-              <th className="w-28">상품</th>
-              <th className="w-44 print:w-16">수량</th>
-              <th className="no-print w-16">빼기</th>
+              <th className="w-[1%]">상품</th>
+              <th className="w-[1%] print:w-16">수량</th>
+              <th className="no-print w-[1%]">빼기</th>
             </tr>
           </thead>
           <tbody>
@@ -184,7 +185,7 @@ export default function SheetDetailPage() {
               <tr key={i.id}>
                 <td className="tabular text-center">{idx + 1}</td>
                 <td className="font-bold whitespace-nowrap">{i.name}</td>
-                <td className="tabular whitespace-nowrap">{i.phone}</td>
+                <td className="tabular whitespace-nowrap">{formatPhone(i.phone)}</td>
                 <td className="text-base">{i.address}</td>
                 <td>
                   <select

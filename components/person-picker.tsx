@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { CircleCheck, Search } from "lucide-react";
 import { inputClass } from "./ui";
+import { formatPhone } from "@/lib/format";
 import type { Person } from "@/lib/types";
 
 /** 이름을 검색해서 발주서에 담는 부품 — 만들기 화면과 상세 화면에서 같이 쓴다 */
@@ -18,10 +19,15 @@ export function PersonPicker({
   const [query, setQuery] = useState("");
 
   const results = useMemo(() => {
-    const q = query.trim();
+    const q = query.trim().normalize("NFC");
     if (!q) return [];
+    const digits = q.replace(/\D/g, "");
     return people
-      .filter((p) => p.name.includes(q) || p.phone.includes(q))
+      .filter(
+        (p) =>
+          p.name.normalize("NFC").includes(q) ||
+          (digits && p.phone.replace(/\D/g, "").includes(digits)),
+      )
       .sort((a, b) => a.name.localeCompare(b.name, "ko"))
       .slice(0, 8);
   }, [people, query]);
@@ -62,7 +68,7 @@ export function PersonPicker({
                   <span className="flex items-center justify-between gap-3">
                     <span className="min-w-0">
                       <span className="text-lg font-bold">{p.name}</span>
-                      <span className="ml-3 text-base text-stone-500 tabular">{p.phone}</span>
+                      <span className="ml-3 text-base text-stone-500 tabular">{formatPhone(p.phone)}</span>
                       <span className="block text-base text-stone-500 truncate">{p.address}</span>
                     </span>
                     {picked ? (
