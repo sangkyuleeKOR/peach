@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex-1 flex flex-col">
       <header className="no-print bg-white border-b border-line sticky top-0 z-20">
-        <div className="mx-auto max-w-5xl px-5 flex items-center justify-between gap-4 h-16">
+        <div className="mx-auto max-w-6xl px-5 flex items-center justify-between gap-4 h-16">
           <Link href="/admin" className="shrink-0 whitespace-nowrap text-xl font-bold text-peach-dark">
             복숭아 발주 관리
           </Link>
@@ -63,7 +63,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <div className="flex-1 mx-auto w-full max-w-5xl px-5 py-8 pb-28 lg:pb-8">{children}</div>
+      <div className="flex-1 mx-auto w-full max-w-6xl px-5 py-8 pb-28 lg:pb-8">{children}</div>
 
       {/* 휴대폰·태블릿 하단 메뉴 */}
       <nav

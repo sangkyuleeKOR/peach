@@ -63,7 +63,7 @@ export default function SheetsPage() {
                   deleteSheet(s.id);
                 }}
                 aria-label={`${formatDateKorean(s.date)} 발주서 지우기`}
-                className="shrink-0 inline-flex items-center rounded-lg border border-red-200 text-red-600 p-2.5 cursor-pointer hover:bg-red-50"
+                className="shrink-0 inline-flex items-center rounded-lg text-red-600 p-2.5 cursor-pointer hover:bg-red-50"
               >
                 <Trash2 className="w-5 h-5" aria-hidden />
               </button>

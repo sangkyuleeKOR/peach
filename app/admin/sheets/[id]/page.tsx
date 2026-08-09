@@ -232,7 +232,7 @@ export default function SheetDetailPage() {
                       patchSheet({ items: sheet.items.filter((x) => x.id !== i.id) });
                     }}
                     aria-label={`${i.name} 삭제`}
-                    className="inline-flex items-center rounded-lg border border-red-200 text-red-600 p-2 cursor-pointer hover:bg-red-50"
+                    className="inline-flex items-center rounded-lg text-red-600 p-2 cursor-pointer hover:bg-red-50"
                   >
                     <Trash2 className="w-5 h-5" aria-hidden />
                   </button>
