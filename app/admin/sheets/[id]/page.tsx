@@ -33,7 +33,6 @@ export default function SheetDetailPage() {
   }
 
   const totalBoxes = sheet.items.reduce((n, i) => n + i.quantity, 0);
-  const pickedIds = new Set(sheet.items.map((i) => i.personId).filter((v): v is number => v != null));
   const productNames = db.products.map((p) => p.name);
 
   function patchSheet(patch: Partial<Pick<OrderSheet, "date" | "memo" | "status" | "items">>) {
@@ -143,7 +142,7 @@ export default function SheetDetailPage() {
                           닫기
                         </button>
                       </div>
-                      <PersonPicker people={db.people} pickedIds={pickedIds} onPick={addPerson} />
+                      <PersonPicker people={db.people} onPick={addPerson} />
                     </div>
                   ) : (
                     <button
@@ -240,7 +239,7 @@ export default function SheetDetailPage() {
                         닫기
                       </button>
                     </div>
-                    <PersonPicker people={db.people} pickedIds={pickedIds} onPick={addPerson} />
+                    <PersonPicker people={db.people} onPick={addPerson} />
                   </div>
                 ) : (
                   <button

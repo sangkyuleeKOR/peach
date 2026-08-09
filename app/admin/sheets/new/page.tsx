@@ -21,7 +21,6 @@ export default function NewSheetPage() {
 
   if (!db) return <Loading error={loadError} />;
 
-  const pickedIds = new Set(items.map((i) => i.personId).filter((v): v is number => v != null));
   const totalBoxes = items.reduce((n, i) => n + i.quantity, 0);
   const productNames = db.products.map((p) => p.name);
 
@@ -79,7 +78,7 @@ export default function NewSheetPage() {
           <h2 className="text-xl font-bold mb-3">
             <span className="text-peach-dark mr-2">②</span>보낼 사람
           </h2>
-          <PersonPicker people={db.people} pickedIds={pickedIds} onPick={addPerson} />
+          <PersonPicker people={db.people} onPick={addPerson} />
         </section>
 
         {/* ③ 담은 사람 표 */}

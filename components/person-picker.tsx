@@ -1,19 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CircleCheck, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { inputClass } from "./ui";
 import { formatPhone } from "@/lib/format";
 import type { Person } from "@/lib/types";
 
-/** 이름을 검색해서 발주서에 담는 부품 — 만들기 화면과 상세 화면에서 같이 쓴다 */
+/** 이름을 검색해서 발주서에 담는 부품 — 같은 사람을 여러 번 담을 수도 있다 */
 export function PersonPicker({
   people,
-  pickedIds,
   onPick,
 }: {
   people: Person[];
-  pickedIds: Set<number>;
   onPick: (p: Person) => void;
 }) {
   const [query, setQuery] = useState("");
@@ -52,37 +50,27 @@ export function PersonPicker({
               &ldquo;{query}&rdquo; 로 찾은 사람이 없어요. 주소록에 먼저 추가해 주세요.
             </li>
           )}
-          {results.map((p) => {
-            const picked = pickedIds.has(p.id);
-            return (
-              <li key={p.id}>
-                {/* 같은 사람을 여러 번 담을 수 있다 (다른 상품을 보낼 때) */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    onPick(p);
-                    setQuery("");
-                  }}
-                  className="w-full text-left px-5 py-3.5 cursor-pointer hover:bg-peach-soft transition-colors"
-                >
-                  <span className="flex items-center justify-between gap-3">
-                    <span className="min-w-0">
-                      <span className="text-lg font-bold">{p.name}</span>
-                      <span className="ml-3 text-base text-stone-500 tabular">{formatPhone(p.phone)}</span>
-                      <span className="block text-base text-stone-500 truncate">{p.address}</span>
-                    </span>
-                    {picked ? (
-                      <span className="shrink-0 inline-flex items-center gap-1 text-leaf font-bold text-base">
-                        <CircleCheck className="w-5 h-5" aria-hidden /> 또 담기 +
-                      </span>
-                    ) : (
-                      <span className="shrink-0 text-peach-dark font-bold text-lg">담기 +</span>
-                    )}
+          {results.map((p) => (
+            <li key={p.id}>
+              <button
+                type="button"
+                onClick={() => {
+                  onPick(p);
+                  setQuery("");
+                }}
+                className="w-full text-left px-5 py-3.5 cursor-pointer hover:bg-peach-soft transition-colors"
+              >
+                <span className="flex items-center justify-between gap-3">
+                  <span className="min-w-0">
+                    <span className="text-lg font-bold">{p.name}</span>
+                    <span className="ml-3 text-base text-stone-500 tabular">{formatPhone(p.phone)}</span>
+                    <span className="block text-base text-stone-500 truncate">{p.address}</span>
                   </span>
-                </button>
-              </li>
-            );
-          })}
+                  <span className="shrink-0 text-peach-dark font-bold text-lg">담기 +</span>
+                </span>
+              </button>
+            </li>
+          ))}
         </ul>
       )}
     </div>
