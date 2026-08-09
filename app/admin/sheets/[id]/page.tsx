@@ -54,28 +54,19 @@ export default function SheetDetailPage() {
     });
   }
 
-  /** 엑셀에서 바로 열리는 CSV 파일로 내려받기 — 전체 또는 택배기사 발송용 */
-  function downloadCsv(kind: "full" | "courier") {
+  /** 엑셀에서 바로 열리는 CSV 파일로 내려받기 — 원래 쓰시던 발주서 엑셀과 같은 열 구성 */
+  function downloadCsv() {
     const esc = (v: string | number) => `"${String(v ?? "").replaceAll('"', '""')}"`;
-    const rows =
-      kind === "courier"
-        ? [
-            // 원래 쓰시던 발주서 엑셀과 같은 열 구성
-            ["날짜", "이름", "휴대전화", "주소", "수량"],
-            ...sheet!.items.map((i) => [sheet!.date, i.name, i.phone, i.address, i.quantity]),
-          ]
-        : [
-            ["날짜", "이름", "휴대전화", "주소", "상품", "수량", "메모", "발송확인"],
-            ...sheet!.items.map((i) => [
-              sheet!.date, i.name, i.phone, i.address, i.product, i.quantity, i.memo ?? "", i.done ? "완료" : "",
-            ]),
-          ];
+    const rows = [
+      ["날짜", "이름", "휴대전화", "주소", "수량"],
+      ...sheet!.items.map((i) => [sheet!.date, i.name, i.phone, i.address, i.quantity]),
+    ];
     // ﻿(BOM)이 있어야 엑셀이 한글을 제대로 읽는다
     const csv = "\uFEFF" + rows.map((r) => r.map(esc).join(",")).join("\r\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${formatDateKorean(sheet!.date)} 발주서${kind === "courier" ? " (택배용)" : ""}.csv`;
+    a.download = `${formatDateKorean(sheet!.date)} 발주서.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -95,13 +86,10 @@ export default function SheetDetailPage() {
         {sheet.memo && <p className="mt-1 text-lg text-stone-500">{sheet.memo}</p>}
       </div>
 
-      {/* 도구: 엑셀 받기 2종 (발송 완료는 휴대폰에선 하단 고정) */}
+      {/* 도구: 엑셀 다운로드 (발송 완료는 휴대폰에선 하단 고정) */}
       <div className="no-print flex gap-3 mb-6 flex-wrap">
-        <BigButton variant="secondary" onClick={() => downloadCsv("courier")} className="flex-1 sm:flex-none">
-          <Download className="w-6 h-6" aria-hidden /> 택배용 엑셀
-        </BigButton>
-        <BigButton variant="secondary" onClick={() => downloadCsv("full")} className="flex-1 sm:flex-none">
-          <Download className="w-6 h-6" aria-hidden /> 전체 엑셀
+        <BigButton variant="secondary" onClick={downloadCsv} className="flex-1 sm:flex-none">
+          <Download className="w-6 h-6" aria-hidden /> 엑셀로 다운로드
         </BigButton>
         <div className="hidden sm:block">
           {sheet.status === "작성중" ? (
@@ -169,7 +157,7 @@ export default function SheetDetailPage() {
                   ) : (
                     <button
                       onClick={() => setAdding(true)}
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-3 text-lg font-bold text-stone-400 cursor-pointer hover:bg-peach-soft hover:text-peach-dark transition-colors"
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-3 text-lg font-bold text-peach-dark cursor-pointer hover:bg-peach-soft transition-colors"
                     >
                       <UserPlus className="w-5 h-5" aria-hidden /> 사람 추가
                     </button>
@@ -277,7 +265,7 @@ export default function SheetDetailPage() {
                 ) : (
                   <button
                     onClick={() => setAdding(true)}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-3 text-lg font-bold text-stone-400 cursor-pointer hover:bg-peach-soft hover:text-peach-dark transition-colors"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-3 text-lg font-bold text-peach-dark cursor-pointer hover:bg-peach-soft transition-colors"
                   >
                     <UserPlus className="w-5 h-5" aria-hidden /> 사람 추가
                   </button>
