@@ -77,7 +77,7 @@ export default function NewSheetPage() {
         {/* ② 사람 담기 */}
         <section className="rounded-2xl bg-white border border-line p-6">
           <h2 className="text-xl font-bold mb-3">
-            <span className="text-peach-dark mr-2">②</span>보낼 사람 담기
+            <span className="text-peach-dark mr-2">②</span>보낼 사람
           </h2>
           <PersonPicker people={db.people} pickedIds={pickedIds} onPick={addPerson} />
         </section>

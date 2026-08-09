@@ -73,7 +73,7 @@ export function PersonPicker({
                     </span>
                     {picked ? (
                       <span className="shrink-0 inline-flex items-center gap-1 text-leaf font-bold text-base">
-                        <CircleCheck className="w-5 h-5" aria-hidden /> 한 번 더 담기 +
+                        <CircleCheck className="w-5 h-5" aria-hidden /> 또 담기 +
                       </span>
                     ) : (
                       <span className="shrink-0 text-peach-dark font-bold text-lg">담기 +</span>

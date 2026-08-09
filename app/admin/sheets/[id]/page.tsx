@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, CircleCheck, Download, Trash2, UserPlus } from "lucide-react";
+import { CircleCheck, Download, Trash2, UserPlus } from "lucide-react";
 import { PersonPicker } from "@/components/person-picker";
 import { BigButton, Loading, ProductChips, QuantityStepper, StatusBadge } from "@/components/ui";
 import { formatPhone } from "@/lib/format";
@@ -15,7 +15,7 @@ export default function SheetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const sheetId = Number(id);
   const router = useRouter();
-  const { db, loadError, updateSheet, deleteSheet } = useDB();
+  const { db, loadError, updateSheet } = useDB();
   const [adding, setAdding] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
@@ -74,25 +74,6 @@ export default function SheetDetailPage() {
 
   return (
     <main>
-      {/* 맨 윗줄: 뒤로가기 ↔ 지우기 (둘 다 조용하게, 양 끝으로) */}
-      <div className="no-print flex items-center justify-between mb-3">
-        <Link
-          href="/admin/sheets"
-          className="inline-flex items-center gap-1.5 text-lg font-bold text-stone-500 hover:text-stone-700"
-        >
-          <ArrowLeft className="w-5 h-5" aria-hidden /> 발주서 목록
-        </Link>
-        <button
-          onClick={async () => {
-            if (!window.confirm(`${formatDateKorean(sheet.date)} 발주서를 완전히 지울까요?`)) return;
-            if (await deleteSheet(sheetId)) router.push("/admin/sheets");
-          }}
-          className="inline-flex items-center gap-1 whitespace-nowrap text-base text-red-500 cursor-pointer hover:text-red-700"
-        >
-          <Trash2 className="w-4 h-4 shrink-0" aria-hidden /> 지우기
-        </button>
-      </div>
-
       {/* 제목 (왼쪽) + 상태 (오른쪽) */}
       <div className="mb-6">
         <div className="flex items-center justify-between gap-3">
@@ -153,7 +134,7 @@ export default function SheetDetailPage() {
                   {adding ? (
                     <div className="p-2">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-lg font-bold">보낼 사람 담기</p>
+                        <p className="text-lg font-bold">보낼 사람</p>
                         <button
                           onClick={() => setAdding(false)}
                           className="text-base font-bold text-stone-500 cursor-pointer hover:text-stone-700"
@@ -250,7 +231,7 @@ export default function SheetDetailPage() {
                 {adding ? (
                   <div className="p-2 max-w-2xl">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-lg font-bold">보낼 사람 담기</p>
+                      <p className="text-lg font-bold">보낼 사람</p>
                       <button
                         onClick={() => setAdding(false)}
                         className="text-base font-bold text-stone-500 cursor-pointer hover:text-stone-700"
@@ -284,17 +265,24 @@ export default function SheetDetailPage() {
         </table>
       </div>
 
-      {/* 휴대폰: 발송 완료 — 스크롤해도 하단에 붙어 있음 */}
-      <div className="no-print sm:hidden sticky bottom-24 z-10 mt-5">
+      {/* 휴대폰: 취소 · 발송 완료 — 스크롤해도 하단에 붙어 있음 */}
+      <div className="no-print sm:hidden sticky bottom-24 z-10 mt-5 flex gap-3">
+        <BigButton
+          variant="secondary"
+          onClick={() => router.push("/admin/sheets")}
+          className="flex-1 shadow-lg"
+        >
+          취소
+        </BigButton>
         {sheet.status === "작성중" ? (
-          <BigButton onClick={() => patchSheet({ status: "발송완료" })} className="w-full text-xl shadow-lg">
+          <BigButton onClick={() => patchSheet({ status: "발송완료" })} className="flex-[2] text-xl shadow-lg">
             <CircleCheck className="w-6 h-6" aria-hidden /> 발송 완료하기
           </BigButton>
         ) : (
           <BigButton
             variant="secondary"
             onClick={() => patchSheet({ status: "작성중" })}
-            className="w-full shadow-lg"
+            className="flex-[2] shadow-lg"
           >
             발송 완료 취소
           </BigButton>
