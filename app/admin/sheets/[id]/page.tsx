@@ -93,20 +93,17 @@ export default function SheetDetailPage() {
         </button>
       </div>
 
-      {/* 제목 + 상태·명수·박스수 한 줄 */}
+      {/* 제목 (왼쪽) + 상태 (오른쪽) */}
       <div className="mb-6">
-        {/* 휴대폰에선 연도를 빼서 한 줄에 들어가게 */}
-        <h1 className="text-2xl sm:text-3xl font-bold whitespace-nowrap">
-          <span className="sm:hidden">{formatDateKorean(sheet.date).replace(/^\d+년 /, "")}</span>
-          <span className="hidden sm:inline">{formatDateKorean(sheet.date)}</span> 발주서
-        </h1>
-        <p className="mt-2 flex items-center gap-3 flex-wrap">
+        <div className="flex items-center justify-between gap-3">
+          {/* 휴대폰에선 연도를 빼서 한 줄에 들어가게 */}
+          <h1 className="text-2xl sm:text-3xl font-bold whitespace-nowrap">
+            <span className="sm:hidden">{formatDateKorean(sheet.date).replace(/^\d+년 /, "")}</span>
+            <span className="hidden sm:inline">{formatDateKorean(sheet.date)}</span> 발주서
+          </h1>
           <StatusBadge status={sheet.status} />
-          <span className="text-lg text-stone-600 tabular">
-            {sheet.items.length}명 · 총 {totalBoxes}박스
-            {sheet.memo && <span className="ml-1 text-stone-400">· {sheet.memo}</span>}
-          </span>
-        </p>
+        </div>
+        {sheet.memo && <p className="mt-1 text-lg text-stone-500">{sheet.memo}</p>}
       </div>
 
       {/* 도구: 엑셀 받기 (발송 완료는 휴대폰에선 하단 고정) */}
@@ -186,7 +183,6 @@ export default function SheetDetailPage() {
             </tfoot>
           </table>
         </div>
-        <p className="mt-2 text-center text-base text-stone-500">줄을 누르면 고칠 수 있어요</p>
       </div>
 
       {/* 태블릿·컴퓨터·인쇄: 엑셀식 표 */}
