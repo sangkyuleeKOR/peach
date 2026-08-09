@@ -17,6 +17,7 @@ export default function SheetDetailPage() {
   const router = useRouter();
   const { db, loadError, updateSheet, deleteSheet } = useDB();
   const [adding, setAdding] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   if (!db) return <Loading error={loadError} />;
   const sheet = db.sheets.find((s) => s.id === sheetId);
@@ -103,26 +104,28 @@ export default function SheetDetailPage() {
         </div>
       </div>
 
-      {/* 도구 버튼: 휴대폰은 2×2 같은 크기, 넓은 화면은 한 줄 */}
-      <div className="no-print grid grid-cols-2 gap-3 mb-6 sm:flex sm:flex-wrap">
-        <BigButton variant="secondary" onClick={() => window.print()}>
-          <Printer className="w-6 h-6" aria-hidden /> 인쇄
+      {/* 도구 버튼: 휴대폰은 작은 3버튼, 넓은 화면은 한 줄 (발송 완료는 휴대폰에선 하단 고정) */}
+      <div className="no-print grid grid-cols-3 gap-3 mb-6 sm:flex sm:flex-wrap">
+        <BigButton variant="secondary" onClick={() => window.print()} className="max-sm:px-2 max-sm:text-base">
+          <Printer className="w-6 h-6 max-sm:w-5 max-sm:h-5" aria-hidden /> 인쇄
         </BigButton>
-        <BigButton variant="secondary" onClick={downloadCsv}>
-          <Download className="w-6 h-6" aria-hidden /> 엑셀 받기
+        <BigButton variant="secondary" onClick={downloadCsv} className="max-sm:px-2 max-sm:text-base">
+          <Download className="w-6 h-6 max-sm:w-5 max-sm:h-5" aria-hidden /> 엑셀
         </BigButton>
-        <BigButton variant="secondary" onClick={() => setAdding((v) => !v)}>
-          <UserPlus className="w-6 h-6" aria-hidden /> 사람 추가
+        <BigButton variant="secondary" onClick={() => setAdding((v) => !v)} className="max-sm:px-2 max-sm:text-base">
+          <UserPlus className="w-6 h-6 max-sm:w-5 max-sm:h-5" aria-hidden /> 사람 추가
         </BigButton>
-        {sheet.status === "작성중" ? (
-          <BigButton onClick={() => patchSheet({ status: "발송완료" })}>
-            <CircleCheck className="w-6 h-6" aria-hidden /> 발송 완료
-          </BigButton>
-        ) : (
-          <BigButton variant="ghost" onClick={() => patchSheet({ status: "작성중" })}>
-            발송 완료 취소
-          </BigButton>
-        )}
+        <div className="hidden sm:block">
+          {sheet.status === "작성중" ? (
+            <BigButton onClick={() => patchSheet({ status: "발송완료" })}>
+              <CircleCheck className="w-6 h-6" aria-hidden /> 발송 완료
+            </BigButton>
+          ) : (
+            <BigButton variant="ghost" onClick={() => patchSheet({ status: "작성중" })}>
+              발송 완료 취소
+            </BigButton>
+          )}
+        </div>
       </div>
 
       {adding && (
@@ -131,44 +134,58 @@ export default function SheetDetailPage() {
         </div>
       )}
 
-      {/* 휴대폰: 카드 목록 (옆으로 밀 필요 없음) */}
-      <div className="sm:hidden print:hidden space-y-3">
-        {sheet.items.map((i, idx) => (
-          <div key={i.id} className="rounded-2xl bg-white border border-line p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-xl font-bold">
-                  <span className="text-stone-400 tabular mr-1.5">{idx + 1}.</span>
-                  {i.name}
-                </p>
-                <p className="tabular text-lg text-stone-600">{formatPhone(i.phone)}</p>
-              </div>
-              <button
-                onClick={() => {
-                  if (!window.confirm(`${i.name} 님을 이 발주서에서 뺄까요?`)) return;
-                  patchSheet({ items: sheet.items.filter((x) => x.id !== i.id) });
-                }}
-                aria-label={`${i.name} 빼기`}
-                className="shrink-0 inline-flex items-center rounded-lg border border-red-200 text-red-600 p-2 cursor-pointer hover:bg-red-50"
-              >
-                <Trash2 className="w-5 h-5" aria-hidden />
-              </button>
-            </div>
-            <p className="mt-2 text-lg text-stone-700">{i.address}</p>
-            <div className="mt-3 space-y-2.5">
-              <ProductChips
-                options={productNames}
-                value={i.product}
-                onChange={(v) => patchItem(i.id, { product: v })}
-                label={`${i.name} 상품`}
-              />
-              <QuantityStepper value={i.quantity} onChange={(v) => patchItem(i.id, { quantity: v })} />
-            </div>
-          </div>
-        ))}
-        {/* 합계 — 스크롤해도 화면 아래에 붙어 있음 */}
-        <div className="sticky bottom-24 z-10 rounded-2xl bg-white border border-line shadow-lg px-5 py-3.5 text-center text-xl font-bold tabular">
-          {sheet.items.length}명 · 합계 {totalBoxes}박스
+      {/* 휴대폰: 미니 엑셀 표 — 줄을 누르면 수정 창이 올라온다 */}
+      <div className="sm:hidden print:hidden">
+        <div className="rounded-xl border border-line bg-white overflow-hidden">
+          <table className="excel-table">
+            <thead>
+              <tr>
+                <th>이름</th>
+                <th className="w-[1%]">상품</th>
+                <th className="w-[1%]">수량</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sheet.items.map((i) => (
+                <tr
+                  key={i.id}
+                  onClick={() => setEditingItemId(i.id)}
+                  className="cursor-pointer"
+                >
+                  <td className="font-bold">{i.name}</td>
+                  <td className="whitespace-nowrap text-base">
+                    {i.product.replace("복숭아 ", "") || "—"}
+                  </td>
+                  <td className="tabular text-center">{i.quantity}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td className="font-bold">합계</td>
+                <td className="font-bold text-right">{sheet.items.length}명</td>
+                <td className="font-bold tabular text-center">{totalBoxes}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <p className="mt-2 text-center text-base text-stone-500">줄을 누르면 고칠 수 있어요</p>
+
+        {/* 발송 완료 — 스크롤해도 하단에 붙어 있음 */}
+        <div className="no-print sticky bottom-24 z-10 mt-4">
+          {sheet.status === "작성중" ? (
+            <BigButton onClick={() => patchSheet({ status: "발송완료" })} className="w-full text-xl shadow-lg">
+              <CircleCheck className="w-6 h-6" aria-hidden /> 발송 완료하기
+            </BigButton>
+          ) : (
+            <BigButton
+              variant="secondary"
+              onClick={() => patchSheet({ status: "작성중" })}
+              className="w-full shadow-lg"
+            >
+              발송 완료 취소
+            </BigButton>
+          )}
         </div>
       </div>
 
@@ -245,6 +262,82 @@ export default function SheetDetailPage() {
         </table>
       </div>
 
+      {/* 줄 수정 창 (휴대폰) */}
+      {(() => {
+        const item = sheet.items.find((i) => i.id === editingItemId);
+        if (!item) return null;
+        return (
+          <ItemEditSheet
+            item={item}
+            productNames={productNames}
+            onChange={(patch) => patchItem(item.id, patch)}
+            onRemove={() => {
+              if (!window.confirm(`${item.name} 님을 이 발주서에서 뺄까요?`)) return;
+              patchSheet({ items: sheet.items.filter((x) => x.id !== item.id) });
+              setEditingItemId(null);
+            }}
+            onClose={() => setEditingItemId(null)}
+          />
+        );
+      })()}
     </main>
+  );
+}
+
+/** 표의 한 줄을 고치는 창 — 아래에서 올라온다 */
+function ItemEditSheet({
+  item,
+  productNames,
+  onChange,
+  onRemove,
+  onClose,
+}: {
+  item: SheetItem;
+  productNames: string[];
+  onChange: (patch: Partial<SheetItem>) => void;
+  onRemove: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${item.name} 수정`}
+      onClick={onClose}
+    >
+      <div
+        className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-2xl p-6 space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-2xl font-bold">
+            {item.name}
+            <span className="ml-3 tabular text-lg font-normal text-stone-500">
+              {formatPhone(item.phone)}
+            </span>
+          </p>
+          <button
+            onClick={onRemove}
+            className="shrink-0 whitespace-nowrap text-red-600 text-base font-bold cursor-pointer hover:underline underline-offset-4"
+          >
+            이 줄 빼기
+          </button>
+        </div>
+        <p className="text-lg text-stone-600">{item.address}</p>
+        <ProductChips
+          options={productNames}
+          value={item.product}
+          onChange={(v) => onChange({ product: v })}
+          label={`${item.name} 상품`}
+        />
+        <div className="flex items-center gap-3">
+          <QuantityStepper value={item.quantity} onChange={(v) => onChange({ quantity: v })} />
+          <BigButton onClick={onClose} className="flex-1">
+            확인
+          </BigButton>
+        </div>
+      </div>
+    </div>
   );
 }
