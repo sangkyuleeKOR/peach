@@ -114,7 +114,7 @@ export default function SheetDetailPage() {
                 <th className="w-24">이름</th>
                 <th>상품</th>
                 <th className="w-14 text-center">수량</th>
-                <th className="w-16 text-center">발송</th>
+                <th className="w-20 text-center whitespace-nowrap">발송</th>
               </tr>
             </thead>
             <tbody>
@@ -188,7 +188,7 @@ export default function SheetDetailPage() {
               <th>주소</th>
               <th className="w-[1%]">상품</th>
               <th className="w-[1%] print:w-16">수량</th>
-              <th className="no-print w-[1%] text-center">발송</th>
+              <th className="no-print w-[1%] text-center whitespace-nowrap">발송</th>
               <th className="no-print w-[1%]">삭제</th>
             </tr>
           </thead>
