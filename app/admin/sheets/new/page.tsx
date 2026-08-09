@@ -1,0 +1,181 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Trash2 } from "lucide-react";
+import { PersonPicker } from "@/components/person-picker";
+import { BigButton, Field, PageTitle, QuantityStepper, inputClass } from "@/components/ui";
+import { formatDateKorean, newId, today, useDB } from "@/lib/store";
+import type { Person, SheetItem } from "@/lib/types";
+
+/** 발주서 만들기: ① 날짜 고르고 ② 이름 찾아 담고 ③ 수량 적고 ④ 저장 */
+export default function NewSheetPage() {
+  const router = useRouter();
+  const { db, update } = useDB();
+
+  const [date, setDate] = useState(today());
+  const [memo, setMemo] = useState("");
+  const [items, setItems] = useState<SheetItem[]>([]);
+  const [error, setError] = useState("");
+
+  if (!db) return null;
+
+  const pickedIds = new Set(items.map((i) => i.personId).filter(Boolean) as string[]);
+  const totalBoxes = items.reduce((n, i) => n + i.quantity, 0);
+  const productNames = db.products.map((p) => p.name);
+
+  function addPerson(p: Person) {
+    setItems((prev) => [
+      ...prev,
+      {
+        id: newId(),
+        personId: p.id,
+        name: p.name,
+        phone: p.phone,
+        address: p.address,
+        product: productNames[0] ?? "",
+        quantity: 1,
+      },
+    ]);
+  }
+
+  function patchItem(id: string, patch: Partial<SheetItem>) {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
+  }
+
+  function save() {
+    if (items.length === 0) return setError("보낼 사람을 한 명 이상 담아 주세요.");
+    const sheetId = newId();
+    update((d) => ({
+      ...d,
+      sheets: [
+        { id: sheetId, date, memo: memo.trim(), status: "작성중", items, createdAt: today() },
+        ...d.sheets,
+      ],
+    }));
+    router.push(`/admin/sheets/${sheetId}`);
+  }
+
+  return (
+    <main>
+      <PageTitle sub="이름을 검색해서 담고, 수량만 적으면 돼요">
+        새 발주서 만들기
+      </PageTitle>
+
+      <div className="space-y-8">
+        {/* ① 날짜 */}
+        <section className="rounded-2xl bg-white border border-line p-6">
+          <h2 className="text-xl font-bold mb-3">
+            <span className="text-peach-dark mr-2">①</span>보내는 날짜
+          </h2>
+          <input
+            type="date"
+            className={`${inputClass} max-w-xs text-xl`}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            aria-label="발주 날짜"
+          />
+          <p className="mt-2 text-lg text-stone-500">{formatDateKorean(date)} 발주서가 만들어져요.</p>
+        </section>
+
+        {/* ② 사람 담기 */}
+        <section className="rounded-2xl bg-white border border-line p-6">
+          <h2 className="text-xl font-bold mb-3">
+            <span className="text-peach-dark mr-2">②</span>보낼 사람 담기
+          </h2>
+          <PersonPicker people={db.people} pickedIds={pickedIds} onPick={addPerson} />
+        </section>
+
+        {/* ③ 담은 사람 표 */}
+        <section className="rounded-2xl bg-white border border-line p-6">
+          <h2 className="text-xl font-bold mb-3">
+            <span className="text-peach-dark mr-2">③</span>담은 사람{" "}
+            <span className="text-stone-500 font-normal">
+              {items.length}명 · 총 {totalBoxes}박스
+            </span>
+          </h2>
+
+          {items.length === 0 ? (
+            <p className="text-lg text-stone-500 py-6 text-center">
+              위에서 이름을 검색해 담으면 여기에 표가 만들어져요.
+            </p>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-line">
+              <table className="excel-table">
+                <thead>
+                  <tr>
+                    <th className="w-24">이름</th>
+                    <th>주소</th>
+                    <th className="w-32">상품</th>
+                    <th className="w-44">수량</th>
+                    <th className="w-16">빼기</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((i) => (
+                    <tr key={i.id}>
+                      <td className="font-bold whitespace-nowrap">{i.name}</td>
+                      <td className="text-base">{i.address}</td>
+                      <td>
+                        <select
+                          className="rounded-lg border border-line px-2 py-2 text-base bg-white cursor-pointer"
+                          value={i.product}
+                          onChange={(e) => patchItem(i.id, { product: e.target.value })}
+                          aria-label={`${i.name} 상품`}
+                        >
+                          {!productNames.includes(i.product) && (
+                            <option value={i.product}>{i.product || "상품 없음"}</option>
+                          )}
+                          {productNames.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>
+                        <QuantityStepper
+                          value={i.quantity}
+                          onChange={(v) => patchItem(i.id, { quantity: v })}
+                        />
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => setItems((prev) => prev.filter((x) => x.id !== i.id))}
+                          aria-label={`${i.name} 빼기`}
+                          className="inline-flex items-center rounded-lg border border-red-200 text-red-600 p-2 cursor-pointer hover:bg-red-50"
+                        >
+                          <Trash2 className="w-5 h-5" aria-hidden />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        {/* ④ 메모 + 저장 */}
+        <section className="rounded-2xl bg-white border border-line p-6 space-y-5">
+          <Field label="메모" hint="예: 월요일 발송분, 후숙 조금 더 된 것">
+            <input className={inputClass} value={memo} onChange={(e) => setMemo(e.target.value)} />
+          </Field>
+          {error && (
+            <p role="alert" className="rounded-xl bg-red-50 border border-red-200 text-red-700 text-lg px-4 py-3">
+              {error}
+            </p>
+          )}
+          <div className="flex gap-3">
+            <BigButton variant="secondary" onClick={() => router.back()} className="flex-1">
+              취소
+            </BigButton>
+            <BigButton onClick={save} className="flex-[2] text-xl">
+              발주서 저장하기
+            </BigButton>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
