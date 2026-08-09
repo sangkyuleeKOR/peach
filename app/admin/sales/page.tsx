@@ -192,7 +192,7 @@ export default function SalesPage() {
                         </td>
                         <td className="tabular">{v.boxes}</td>
                         <td className="tabular whitespace-nowrap">{won(v.revenue)}</td>
-                        <td className="w-full min-w-40">
+                        <td className="hidden sm:table-cell w-full min-w-40">
                           <div
                             className="h-6 rounded-r bg-peach"
                             style={{ width: `${Math.max(2, (v.revenue / maxMonthRevenue) * 100)}%` }}
@@ -226,7 +226,7 @@ export default function SalesPage() {
                     <th className="w-44">상품</th>
                     <th className="w-24">박스</th>
                     <th className="w-36">매출</th>
-                    <th>
+                    <th className="hidden sm:table-cell">
                       <span className="sr-only">매출 크기 비교</span>
                     </th>
                   </tr>
@@ -237,7 +237,7 @@ export default function SalesPage() {
                       <td className="font-bold">{name || "상품 없음"}</td>
                       <td className="tabular">{p.boxes}</td>
                       <td className="tabular whitespace-nowrap">{won(p.revenue)}</td>
-                      <td className="w-full min-w-40">
+                      <td className="hidden sm:table-cell w-full min-w-40">
                         <div
                           className="h-6 rounded-r bg-peach"
                           style={{ width: `${Math.max(2, (p.revenue / maxProductRevenue) * 100)}%` }}

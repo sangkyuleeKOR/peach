@@ -63,7 +63,42 @@ export default function PeoplePage() {
           }
         />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-line bg-white">
+        <>
+        {/* 휴대폰: 카드 목록 (옆으로 밀 필요 없음) */}
+        <div className="sm:hidden space-y-3">
+          {filtered.map((p) => (
+            <div key={p.id} className="rounded-2xl bg-white border border-line p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xl font-bold">{p.name}</p>
+                  <p className="tabular text-lg text-stone-600">
+                    {p.phone || <span className="text-stone-400">전화번호 없음</span>}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => setEditing({ mode: "edit", person: p })}
+                    className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg border border-line px-3 py-2 text-base font-bold cursor-pointer hover:border-peach hover:text-peach-dark"
+                  >
+                    <Pencil className="w-4 h-4 shrink-0" aria-hidden /> 수정
+                  </button>
+                  <button
+                    onClick={() => remove(p)}
+                    aria-label={`${p.name} 삭제`}
+                    className="inline-flex items-center rounded-lg border border-red-200 text-red-600 px-3 py-2 cursor-pointer hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" aria-hidden />
+                  </button>
+                </div>
+              </div>
+              <p className="mt-2 text-lg text-stone-700">{p.address}</p>
+              {p.referrer && <p className="mt-1 text-base text-stone-500">소개: {p.referrer}</p>}
+            </div>
+          ))}
+        </div>
+
+        {/* 태블릿·컴퓨터: 엑셀식 표 */}
+        <div className="hidden sm:block overflow-x-auto rounded-xl border border-line bg-white">
           <table className="excel-table">
             <thead>
               <tr>
@@ -103,6 +138,7 @@ export default function PeoplePage() {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {editing && (

@@ -118,8 +118,55 @@ export default function SheetDetailPage() {
         </div>
       )}
 
-      {/* 엑셀 표 (인쇄 영역) */}
-      <div className="print-area overflow-x-auto rounded-xl border border-line bg-white">
+      {/* 휴대폰: 카드 목록 (옆으로 밀 필요 없음) */}
+      <div className="sm:hidden print:hidden space-y-3">
+        {sheet.items.map((i, idx) => (
+          <div key={i.id} className="rounded-2xl bg-white border border-line p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xl font-bold">
+                  <span className="text-stone-400 tabular mr-1.5">{idx + 1}.</span>
+                  {i.name}
+                </p>
+                <p className="tabular text-lg text-stone-600">{i.phone}</p>
+              </div>
+              <button
+                onClick={() => {
+                  if (!window.confirm(`${i.name} 님을 이 발주서에서 뺄까요?`)) return;
+                  patchSheet({ items: sheet.items.filter((x) => x.id !== i.id) });
+                }}
+                aria-label={`${i.name} 빼기`}
+                className="shrink-0 inline-flex items-center rounded-lg border border-red-200 text-red-600 p-2 cursor-pointer hover:bg-red-50"
+              >
+                <Trash2 className="w-5 h-5" aria-hidden />
+              </button>
+            </div>
+            <p className="mt-2 text-lg text-stone-700">{i.address}</p>
+            <div className="mt-3 flex items-center gap-3 flex-wrap">
+              <select
+                className="rounded-lg border border-line px-2 py-2.5 text-base bg-white cursor-pointer"
+                value={i.product}
+                onChange={(e) => patchItem(i.id, { product: e.target.value })}
+                aria-label={`${i.name} 상품`}
+              >
+                {!productNames.includes(i.product) && (
+                  <option value={i.product}>{i.product || "상품 없음"}</option>
+                )}
+                {productNames.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+              <QuantityStepper value={i.quantity} onChange={(v) => patchItem(i.id, { quantity: v })} />
+            </div>
+          </div>
+        ))}
+        <p className="text-right text-xl font-bold pr-1">합계 {totalBoxes}박스</p>
+      </div>
+
+      {/* 태블릿·컴퓨터·인쇄: 엑셀식 표 */}
+      <div className="hidden sm:block print:block print-area overflow-x-auto rounded-xl border border-line bg-white">
         <table className="excel-table">
           <thead>
             <tr>

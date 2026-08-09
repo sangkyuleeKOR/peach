@@ -96,7 +96,48 @@ export default function NewSheetPage() {
               위에서 이름을 검색해 담으면 여기에 표가 만들어져요.
             </p>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-line">
+            <>
+            {/* 휴대폰: 카드 목록 */}
+            <div className="sm:hidden space-y-3">
+              {items.map((i) => (
+                <div key={i.id} className="rounded-xl border border-line p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-lg font-bold">{i.name}</p>
+                      <p className="text-base text-stone-600">{i.address}</p>
+                    </div>
+                    <button
+                      onClick={() => setItems((prev) => prev.filter((x) => x.id !== i.id))}
+                      aria-label={`${i.name} 빼기`}
+                      className="shrink-0 inline-flex items-center rounded-lg border border-red-200 text-red-600 p-2 cursor-pointer hover:bg-red-50"
+                    >
+                      <Trash2 className="w-5 h-5" aria-hidden />
+                    </button>
+                  </div>
+                  <div className="mt-3 flex items-center gap-3 flex-wrap">
+                    <select
+                      className="rounded-lg border border-line px-2 py-2.5 text-base bg-white cursor-pointer"
+                      value={i.product}
+                      onChange={(e) => patchItem(i.id, { product: e.target.value })}
+                      aria-label={`${i.name} 상품`}
+                    >
+                      {!productNames.includes(i.product) && (
+                        <option value={i.product}>{i.product || "상품 없음"}</option>
+                      )}
+                      {productNames.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                    <QuantityStepper value={i.quantity} onChange={(v) => patchItem(i.id, { quantity: v })} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* 태블릿·컴퓨터: 표 */}
+            <div className="hidden sm:block overflow-x-auto rounded-xl border border-line">
               <table className="excel-table">
                 <thead>
                   <tr>
@@ -149,6 +190,7 @@ export default function NewSheetPage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </section>
 
