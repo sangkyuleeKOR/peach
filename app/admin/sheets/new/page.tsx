@@ -145,7 +145,7 @@ export default function NewSheetPage() {
                       <td className="text-base">{i.address}</td>
                       <td>
                         <select
-                          className="h-14 rounded-xl border-2 border-line px-3 text-lg bg-white cursor-pointer"
+                          className="h-14 rounded-xl border-2 border-line px-3 text-lg font-bold bg-white cursor-pointer"
                           value={i.product}
                           onChange={(e) => patchItem(i.id, { product: e.target.value })}
                           aria-label={`${i.name} 상품`}
