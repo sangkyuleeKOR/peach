@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { CircleCheck, Download, Trash2, UserPlus } from "lucide-react";
 import { PersonPicker } from "@/components/person-picker";
-import { BigButton, Loading, ProductChips, QuantityStepper, StatusBadge } from "@/components/ui";
+import { BigButton, Loading, ProductChips, ProductSelect, QuantityStepper, StatusBadge } from "@/components/ui";
 import { formatPhone } from "@/lib/format";
 import { formatDateKorean, newId, useDB } from "@/lib/store";
 import type { OrderSheet, Person, SheetItem } from "@/lib/types";
@@ -200,21 +200,14 @@ export default function SheetDetailPage() {
                 <td className="tabular whitespace-nowrap">{formatPhone(i.phone)}</td>
                 <td className="text-base">{i.address}</td>
                 <td>
-                  <select
-                    className="no-print h-14 rounded-xl border-2 border-line px-3 text-lg font-bold bg-white cursor-pointer"
-                    value={i.product}
-                    onChange={(e) => patchItem(i.id, { product: e.target.value })}
-                    aria-label={`${i.name} 상품`}
-                  >
-                    {!productNames.includes(i.product) && (
-                      <option value={i.product}>{i.product || "상품 없음"}</option>
-                    )}
-                    {productNames.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
+                  <span className="no-print">
+                    <ProductSelect
+                      options={productNames}
+                      value={i.product}
+                      onChange={(v) => patchItem(i.id, { product: v })}
+                      label={`${i.name} 상품`}
+                    />
+                  </span>
                   <span className="hidden print:inline">{i.product}</span>
                 </td>
                 <td>

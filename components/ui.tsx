@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, Plus } from "lucide-react";
+import { ChevronDown, Minus, Plus } from "lucide-react";
 import type { ReactNode } from "react";
 
 /** 큰 글자, 큰 버튼 — 연세 있으신 분 기준의 공용 부품들 */
@@ -81,21 +81,56 @@ export function QuantityStepper({
         type="button"
         aria-label="수량 줄이기"
         onClick={() => onChange(Math.max(min, value - 1))}
-        className="w-14 h-full flex items-center justify-center cursor-pointer hover:bg-stone-100 text-stone-700"
+        className="w-11 h-full flex items-center justify-center cursor-pointer hover:bg-stone-100 text-stone-700"
       >
-        <Minus className="w-6 h-6" />
+        <Minus className="w-5 h-5" />
       </button>
       {/* 상품 버튼과 같은 글자 크기 */}
-      <span className="w-14 text-center text-lg font-bold tabular">{value}</span>
+      <span className="w-10 text-center text-lg font-bold tabular">{value}</span>
       <button
         type="button"
         aria-label="수량 늘리기"
         onClick={() => onChange(value + 1)}
-        className="w-14 h-full flex items-center justify-center cursor-pointer hover:bg-stone-100 text-stone-700"
+        className="w-11 h-full flex items-center justify-center cursor-pointer hover:bg-stone-100 text-stone-700"
       >
-        <Plus className="w-6 h-6" />
+        <Plus className="w-5 h-5" />
       </button>
     </div>
+  );
+}
+
+/** 상품 고르기(펼침 메뉴) — 화살표를 직접 그려서 잘리지 않게 */
+export function ProductSelect({
+  options,
+  value,
+  onChange,
+  label,
+}: {
+  options: string[];
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+}) {
+  const opts = !value || options.includes(value) ? options : [value, ...options];
+  return (
+    <span className="relative inline-block">
+      <select
+        className="appearance-none h-14 rounded-xl border-2 border-line pl-3 pr-10 text-lg font-bold bg-white cursor-pointer"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={label}
+      >
+        {opts.map((t) => (
+          <option key={t} value={t}>
+            {t || "상품 없음"}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-500"
+        aria-hidden
+      />
+    </span>
   );
 }
 
