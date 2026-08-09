@@ -108,12 +108,13 @@ export default function SheetDetailPage() {
       {/* 휴대폰: 미니 엑셀 표 — 줄을 누르면 수정 창이 올라온다 */}
       <div className="sm:hidden print:hidden">
         <div className="rounded-xl border border-line bg-white overflow-hidden">
-          <table className="excel-table">
+          {/* table-fixed: 안쪽 내용(검색 결과 등)이 길어도 표가 화면 밖으로 늘어나지 않게 */}
+          <table className="excel-table table-fixed w-full">
             <thead>
               <tr>
-                <th className="w-[1%]">이름</th>
+                <th className="w-24">이름</th>
                 <th>상품</th>
-                <th className="w-[1%]">수량</th>
+                <th className="w-16 text-center">수량</th>
               </tr>
             </thead>
             <tbody>
@@ -123,7 +124,7 @@ export default function SheetDetailPage() {
                   onClick={() => setEditingItemId(i.id)}
                   className="cursor-pointer"
                 >
-                  <td className="font-bold whitespace-nowrap">{i.name}</td>
+                  <td className="font-bold">{i.name}</td>
                   <td className="text-base">{i.product || "—"}</td>
                   <td className="tabular text-center">{i.quantity}</td>
                 </tr>
