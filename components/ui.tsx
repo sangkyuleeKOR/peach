@@ -115,6 +115,22 @@ export function EmptyState({ title, action }: { title: string; action?: ReactNod
   );
 }
 
+export function Loading({ error }: { error?: boolean }) {
+  return (
+    <div className="py-20 text-center text-xl text-stone-500">
+      {error ? (
+        <>
+          데이터를 불러오지 못했어요.
+          <br />
+          인터넷 연결을 확인하고 새로고침해 주세요.
+        </>
+      ) : (
+        "불러오는 중이에요…"
+      )}
+    </div>
+  );
+}
+
 export function StatusBadge({ status }: { status: string }) {
   const color =
     status === "발송완료" || status === "발주완료"

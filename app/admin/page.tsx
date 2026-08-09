@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { BookUser, FilePlus2 } from "lucide-react";
-import { StatusBadge } from "@/components/ui";
+import { Loading, StatusBadge } from "@/components/ui";
 import { formatDateKorean, useDB } from "@/lib/store";
 
 /** 어머니 첫 화면: 오늘 할 일이 한눈에 */
 export default function AdminHome() {
-  const { db } = useDB();
-  if (!db) return null;
+  const { db, loadError } = useDB();
+  if (!db) return <Loading error={loadError} />;
 
   const recentSheets = [...db.sheets].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 3);
 

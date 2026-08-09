@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { EmptyState, PageTitle, StatusBadge } from "@/components/ui";
+import { EmptyState, Loading, PageTitle, StatusBadge } from "@/components/ui";
 import { formatDateKorean, useDB } from "@/lib/store";
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 
 /** 매출: 발주서에 적힌 수량 × 상품 가격. 연도와 달을 골라 볼 수 있다. */
 export default function SalesPage() {
-  const { db } = useDB();
+  const { db, loadError } = useDB();
   const now = new Date();
 
   const years = useMemo(() => {
@@ -75,7 +75,7 @@ export default function SalesPage() {
     return { months, products, total, monthSheets, hasUnpriced };
   }, [db, year, month]);
 
-  if (!db || !stats) return null;
+  if (!db || !stats) return <Loading error={loadError} />;
 
   const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
   const maxMonthRevenue = Math.max(1, ...stats.months.map(([, m]) => m.revenue));

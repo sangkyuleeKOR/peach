@@ -4,23 +4,24 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { PersonPicker } from "@/components/person-picker";
-import { BigButton, Field, PageTitle, QuantityStepper, inputClass } from "@/components/ui";
+import { BigButton, Field, Loading, PageTitle, QuantityStepper, inputClass } from "@/components/ui";
 import { formatDateKorean, newId, today, useDB } from "@/lib/store";
 import type { Person, SheetItem } from "@/lib/types";
 
 /** 발주서 만들기: ① 날짜 고르고 ② 이름 찾아 담고 ③ 수량 적고 ④ 저장 */
 export default function NewSheetPage() {
   const router = useRouter();
-  const { db, update } = useDB();
+  const { db, loadError, createSheet } = useDB();
 
   const [date, setDate] = useState(today());
   const [memo, setMemo] = useState("");
   const [items, setItems] = useState<SheetItem[]>([]);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  if (!db) return null;
+  if (!db) return <Loading error={loadError} />;
 
-  const pickedIds = new Set(items.map((i) => i.personId).filter(Boolean) as string[]);
+  const pickedIds = new Set(items.map((i) => i.personId).filter((v): v is number => v != null));
   const totalBoxes = items.reduce((n, i) => n + i.quantity, 0);
   const productNames = db.products.map((p) => p.name);
 
@@ -43,17 +44,12 @@ export default function NewSheetPage() {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
   }
 
-  function save() {
+  async function save() {
     if (items.length === 0) return setError("보낼 사람을 한 명 이상 담아 주세요.");
-    const sheetId = newId();
-    update((d) => ({
-      ...d,
-      sheets: [
-        { id: sheetId, date, memo: memo.trim(), status: "작성중", items, createdAt: today() },
-        ...d.sheets,
-      ],
-    }));
-    router.push(`/admin/sheets/${sheetId}`);
+    setSaving(true);
+    const sheetId = await createSheet({ date, memo: memo.trim(), items });
+    setSaving(false);
+    if (sheetId != null) router.push(`/admin/sheets/${sheetId}`);
   }
 
   return (
@@ -170,8 +166,8 @@ export default function NewSheetPage() {
             <BigButton variant="secondary" onClick={() => router.back()} className="flex-1">
               취소
             </BigButton>
-            <BigButton onClick={save} className="flex-[2] text-xl">
-              발주서 저장하기
+            <BigButton onClick={save} disabled={saving} className="flex-[2] text-xl">
+              {saving ? "저장하는 중…" : "발주서 저장하기"}
             </BigButton>
           </div>
         </section>

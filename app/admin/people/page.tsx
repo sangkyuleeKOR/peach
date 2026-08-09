@@ -2,15 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { Pencil, Search, Trash2, UserPlus } from "lucide-react";
-import { BigButton, EmptyState, Field, PageTitle, inputClass } from "@/components/ui";
-import { newId, today, useDB } from "@/lib/store";
-import type { Person } from "@/lib/types";
+import { BigButton, EmptyState, Field, Loading, PageTitle, inputClass } from "@/components/ui";
+import { useDB } from "@/lib/store";
+import type { Person, PersonInput } from "@/lib/types";
 
 type Editing = { mode: "new" } | { mode: "edit"; person: Person } | null;
 
 /** 주소록: 엑셀 표 그대로 + 이름 검색 + 추가/수정/삭제 */
 export default function PeoplePage() {
-  const { db, update } = useDB();
+  const { db, loadError, addPerson, updatePerson, deletePerson } = useDB();
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<Editing>(null);
 
@@ -25,11 +25,11 @@ export default function PeoplePage() {
     return [...list].sort((a, b) => a.name.localeCompare(b.name, "ko"));
   }, [db, query]);
 
-  if (!db) return null;
+  if (!db) return <Loading error={loadError} />;
 
   function remove(p: Person) {
     if (!window.confirm(`${p.name} 님을 주소록에서 지울까요?`)) return;
-    update((d) => ({ ...d, people: d.people.filter((x) => x.id !== p.id) }));
+    deletePerson(p.id);
   }
 
   return (
@@ -109,21 +109,12 @@ export default function PeoplePage() {
         <PersonDialog
           person={editing.mode === "edit" ? editing.person : undefined}
           onClose={() => setEditing(null)}
-          onSave={(data) => {
-            if (editing.mode === "edit") {
-              update((d) => ({
-                ...d,
-                people: d.people.map((x) =>
-                  x.id === editing.person.id ? { ...x, ...data } : x,
-                ),
-              }));
-            } else {
-              update((d) => ({
-                ...d,
-                people: [{ id: newId(), createdAt: today(), ...data }, ...d.people],
-              }));
-            }
-            setEditing(null);
+          onSave={async (data) => {
+            const ok =
+              editing.mode === "edit"
+                ? await updatePerson(editing.person.id, data)
+                : await addPerson(data);
+            if (ok) setEditing(null);
           }}
         />
       )}
@@ -138,7 +129,7 @@ function PersonDialog({
 }: {
   person?: Person;
   onClose: () => void;
-  onSave: (data: Pick<Person, "name" | "phone" | "address" | "referrer">) => void;
+  onSave: (data: PersonInput) => void;
 }) {
   const [name, setName] = useState(person?.name ?? "");
   const [phone, setPhone] = useState(person?.phone ?? "");

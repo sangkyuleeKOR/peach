@@ -5,19 +5,20 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowLeft, CircleCheck, Download, Printer, Trash2, UserPlus } from "lucide-react";
 import { PersonPicker } from "@/components/person-picker";
-import { BigButton, QuantityStepper, StatusBadge } from "@/components/ui";
+import { BigButton, Loading, QuantityStepper, StatusBadge } from "@/components/ui";
 import { formatDateKorean, newId, useDB } from "@/lib/store";
 import type { OrderSheet, Person, SheetItem } from "@/lib/types";
 
 /** 발주서 한 장: 엑셀처럼 보고, 고치고, 인쇄하고, 엑셀 파일로 내려받는다 */
 export default function SheetDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const sheetId = Number(id);
   const router = useRouter();
-  const { db, update } = useDB();
+  const { db, loadError, updateSheet, deleteSheet } = useDB();
   const [adding, setAdding] = useState(false);
 
-  if (!db) return null;
-  const sheet = db.sheets.find((s) => s.id === id);
+  if (!db) return <Loading error={loadError} />;
+  const sheet = db.sheets.find((s) => s.id === sheetId);
   if (!sheet) {
     return (
       <main className="py-16 text-center">
@@ -30,14 +31,11 @@ export default function SheetDetailPage() {
   }
 
   const totalBoxes = sheet.items.reduce((n, i) => n + i.quantity, 0);
-  const pickedIds = new Set(sheet.items.map((i) => i.personId).filter(Boolean) as string[]);
+  const pickedIds = new Set(sheet.items.map((i) => i.personId).filter((v): v is number => v != null));
   const productNames = db.products.map((p) => p.name);
 
-  function patchSheet(patch: Partial<OrderSheet>) {
-    update((d) => ({
-      ...d,
-      sheets: d.sheets.map((s) => (s.id === id ? { ...s, ...patch } : s)),
-    }));
+  function patchSheet(patch: Partial<Pick<OrderSheet, "date" | "memo" | "status" | "items">>) {
+    updateSheet(sheetId, patch);
   }
 
   function patchItem(itemId: string, patch: Partial<SheetItem>) {
@@ -195,10 +193,9 @@ export default function SheetDetailPage() {
 
       <div className="no-print mt-8 text-right">
         <button
-          onClick={() => {
+          onClick={async () => {
             if (!window.confirm("이 발주서를 완전히 지울까요?")) return;
-            update((d) => ({ ...d, sheets: d.sheets.filter((s) => s.id !== id) }));
-            router.push("/admin/sheets");
+            if (await deleteSheet(sheetId)) router.push("/admin/sheets");
           }}
           className="text-red-600 text-lg underline underline-offset-4 cursor-pointer"
         >

@@ -2,22 +2,22 @@
 
 import { useState } from "react";
 import { PackagePlus, Pencil, Trash2 } from "lucide-react";
-import { BigButton, EmptyState, Field, PageTitle, inputClass } from "@/components/ui";
-import { newId, today, useDB } from "@/lib/store";
-import type { Product } from "@/lib/types";
+import { BigButton, EmptyState, Field, Loading, PageTitle, inputClass } from "@/components/ui";
+import { useDB } from "@/lib/store";
+import type { Product, ProductInput } from "@/lib/types";
 
 type Editing = { mode: "new" } | { mode: "edit"; product: Product } | null;
 
 /** 상품 관리: 파는 복숭아 종류를 등록해 두면 발주서에서 골라 쓸 수 있다 */
 export default function ProductsPage() {
-  const { db, update } = useDB();
+  const { db, loadError, addProduct, updateProduct, deleteProduct } = useDB();
   const [editing, setEditing] = useState<Editing>(null);
 
-  if (!db) return null;
+  if (!db) return <Loading error={loadError} />;
 
   function remove(p: Product) {
     if (!window.confirm(`"${p.name}" 상품을 지울까요?`)) return;
-    update((d) => ({ ...d, products: d.products.filter((x) => x.id !== p.id) }));
+    deleteProduct(p.id);
   }
 
   return (
@@ -83,21 +83,12 @@ export default function ProductsPage() {
         <ProductDialog
           product={editing.mode === "edit" ? editing.product : undefined}
           onClose={() => setEditing(null)}
-          onSave={(data) => {
-            if (editing.mode === "edit") {
-              update((d) => ({
-                ...d,
-                products: d.products.map((x) =>
-                  x.id === editing.product.id ? { ...x, ...data } : x,
-                ),
-              }));
-            } else {
-              update((d) => ({
-                ...d,
-                products: [...d.products, { id: newId(), createdAt: today(), ...data }],
-              }));
-            }
-            setEditing(null);
+          onSave={async (data) => {
+            const ok =
+              editing.mode === "edit"
+                ? await updateProduct(editing.product.id, data)
+                : await addProduct(data);
+            if (ok) setEditing(null);
           }}
         />
       )}
@@ -112,7 +103,7 @@ function ProductDialog({
 }: {
   product?: Product;
   onClose: () => void;
-  onSave: (data: Pick<Product, "name" | "price">) => void;
+  onSave: (data: ProductInput) => void;
 }) {
   const [name, setName] = useState(product?.name ?? "");
   const [price, setPrice] = useState(product?.price ? String(product.price) : "");

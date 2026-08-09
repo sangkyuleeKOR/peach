@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { FilePlus2, Trash2 } from "lucide-react";
-import { BigButton, EmptyState, PageTitle, StatusBadge } from "@/components/ui";
+import { BigButton, EmptyState, Loading, PageTitle, StatusBadge } from "@/components/ui";
 import { formatDateKorean, useDB } from "@/lib/store";
 
 /** 발주서 목록: 날짜별로 한 장씩 */
 export default function SheetsPage() {
-  const { db, update } = useDB();
-  if (!db) return null;
+  const { db, loadError, deleteSheet } = useDB();
+  if (!db) return <Loading error={loadError} />;
 
   const sheets = [...db.sheets].sort((a, b) => (a.date < b.date ? 1 : -1));
 
@@ -52,7 +52,7 @@ export default function SheetsPage() {
               <button
                 onClick={() => {
                   if (!window.confirm(`${formatDateKorean(s.date)} 발주서를 지울까요?`)) return;
-                  update((d) => ({ ...d, sheets: d.sheets.filter((x) => x.id !== s.id) }));
+                  deleteSheet(s.id);
                 }}
                 aria-label="발주서 삭제"
                 className="shrink-0 inline-flex items-center rounded-lg border border-red-200 text-red-600 px-3 py-2 cursor-pointer hover:bg-red-50"

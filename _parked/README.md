@@ -10,4 +10,6 @@
 4. `app/admin/layout.tsx`의 NAV에 `{ href: "/admin/orders", label: "새 주문", icon: Inbox }` 다시 추가
 5. `app/admin/page.tsx`에 새 주문 알림 카드 복원
 
-데이터 쪽(`lib/types.ts`의 CustomerOrder, `lib/mock.ts`, `lib/store.ts`)은 그대로 남겨두었으므로 화면만 되돌리면 된다.
+주의: 그 사이 저장소가 localStorage → Supabase로 바뀌었다. 복원할 때는
+`customer_orders` 테이블을 만들고 `lib/store.ts`에 주문 CRUD를 추가해야 한다
+(손님 주문 넣기는 로그인 없이 가능해야 하므로 anon insert 정책도 필요).

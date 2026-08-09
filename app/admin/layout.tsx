@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { BookUser, ChartColumn, FileSpreadsheet, House, LogOut, Package } from "lucide-react";
 import type { ReactNode } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 const NAV = [
   { href: "/admin", label: "홈", icon: House, exact: true },
@@ -16,8 +17,16 @@ const NAV = [
 /** 관리 화면 공통 뼈대: 큰 상단 메뉴(컴퓨터) + 하단 메뉴(휴대폰) */
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isActive = (href: string, exact?: boolean) =>
     exact ? pathname === href : pathname.startsWith(href);
+
+  async function signOut() {
+    if (!window.confirm("로그아웃할까요?\n다음에 쓸 때 다시 로그인해야 해요.")) return;
+    await createClient().auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <div className="flex-1 flex flex-col">
@@ -44,13 +53,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
-          <Link
-            href="/"
-            className="shrink-0 inline-flex items-center gap-1.5 whitespace-nowrap text-base text-stone-500 hover:text-stone-700"
+          <button
+            onClick={signOut}
+            className="shrink-0 inline-flex items-center gap-1.5 whitespace-nowrap text-base text-stone-500 hover:text-stone-700 cursor-pointer"
           >
             <LogOut className="w-5 h-5 shrink-0" aria-hidden />
-            나가기
-          </Link>
+            로그아웃
+          </button>
         </div>
       </header>
 

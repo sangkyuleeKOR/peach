@@ -12,7 +12,7 @@ export function PersonPicker({
   onPick,
 }: {
   people: Person[];
-  pickedIds: Set<string>;
+  pickedIds: Set<number>;
   onPick: (p: Person) => void;
 }) {
   const [query, setQuery] = useState("");
