@@ -197,10 +197,9 @@ export default function SalesPage() {
                     </span>
                   </button>
                 ))}
-                <div className="flex items-center justify-between rounded-xl bg-stone-100 px-4 py-3.5">
-                  <span className="text-lg font-bold">합계</span>
+                <div className="flex justify-end px-4 pt-1.5">
                   <span className="tabular text-lg font-bold">
-                    {stats.total.boxes}박스 · {won(stats.total.revenue)}
+                    합계 {stats.total.boxes}박스 · {won(stats.total.revenue)}
                   </span>
                 </div>
               </div>

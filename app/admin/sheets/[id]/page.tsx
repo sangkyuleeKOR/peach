@@ -177,7 +177,7 @@ export default function SheetDetailPage() {
               <th>주소</th>
               <th className="w-[1%]">상품</th>
               <th className="w-[1%] print:w-16">수량</th>
-              <th className="no-print w-[1%]">빼기</th>
+              <th className="no-print w-[1%]">삭제</th>
             </tr>
           </thead>
           <tbody>
@@ -217,7 +217,7 @@ export default function SheetDetailPage() {
                       if (!window.confirm(`${i.name} 님을 이 발주서에서 뺄까요?`)) return;
                       patchSheet({ items: sheet.items.filter((x) => x.id !== i.id) });
                     }}
-                    aria-label={`${i.name} 빼기`}
+                    aria-label={`${i.name} 삭제`}
                     className="inline-flex items-center rounded-lg border border-red-200 text-red-600 p-2 cursor-pointer hover:bg-red-50"
                   >
                     <Trash2 className="w-5 h-5" aria-hidden />

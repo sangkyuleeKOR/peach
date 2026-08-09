@@ -75,12 +75,13 @@ export function QuantityStepper({
   min?: number;
 }) {
   return (
-    <div className="inline-flex items-center rounded-xl border-2 border-line bg-white overflow-hidden">
+    // h-14: 상품 버튼·확인 버튼과 같은 높이 (테두리 포함)
+    <div className="inline-flex items-center h-14 rounded-xl border-2 border-line bg-white overflow-hidden">
       <button
         type="button"
         aria-label="수량 줄이기"
         onClick={() => onChange(Math.max(min, value - 1))}
-        className="w-14 h-14 flex items-center justify-center cursor-pointer hover:bg-stone-100 text-stone-700"
+        className="w-14 h-full flex items-center justify-center cursor-pointer hover:bg-stone-100 text-stone-700"
       >
         <Minus className="w-6 h-6" />
       </button>
@@ -89,7 +90,7 @@ export function QuantityStepper({
         type="button"
         aria-label="수량 늘리기"
         onClick={() => onChange(value + 1)}
-        className="w-14 h-14 flex items-center justify-center cursor-pointer hover:bg-stone-100 text-stone-700"
+        className="w-14 h-full flex items-center justify-center cursor-pointer hover:bg-stone-100 text-stone-700"
       >
         <Plus className="w-6 h-6" />
       </button>

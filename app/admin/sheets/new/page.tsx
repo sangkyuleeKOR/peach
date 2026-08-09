@@ -107,7 +107,7 @@ export default function NewSheetPage() {
                     </div>
                     <button
                       onClick={() => setItems((prev) => prev.filter((x) => x.id !== i.id))}
-                      aria-label={`${i.name} 빼기`}
+                      aria-label={`${i.name} 삭제`}
                       className="shrink-0 inline-flex items-center rounded-lg border border-red-200 text-red-600 p-2 cursor-pointer hover:bg-red-50"
                     >
                       <Trash2 className="w-5 h-5" aria-hidden />
@@ -135,7 +135,7 @@ export default function NewSheetPage() {
                     <th>주소</th>
                     <th className="w-[1%]">상품</th>
                     <th className="w-[1%]">수량</th>
-                    <th className="w-[1%]">빼기</th>
+                    <th className="w-[1%]">삭제</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -169,7 +169,7 @@ export default function NewSheetPage() {
                       <td>
                         <button
                           onClick={() => setItems((prev) => prev.filter((x) => x.id !== i.id))}
-                          aria-label={`${i.name} 빼기`}
+                          aria-label={`${i.name} 삭제`}
                           className="inline-flex items-center rounded-lg border border-red-200 text-red-600 p-2 cursor-pointer hover:bg-red-50"
                         >
                           <Trash2 className="w-5 h-5" aria-hidden />
