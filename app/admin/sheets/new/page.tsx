@@ -11,14 +11,13 @@ export default function NewSheetPage() {
   const { db, loadError, createSheet } = useDB();
 
   const [date, setDate] = useState(today());
-  const [memo, setMemo] = useState("");
   const [saving, setSaving] = useState(false);
 
   if (!db) return <Loading error={loadError} />;
 
   async function save() {
     setSaving(true);
-    const sheetId = await createSheet({ date, memo: memo.trim(), items: [] });
+    const sheetId = await createSheet({ date, memo: "", items: [] });
     setSaving(false);
     if (sheetId != null) router.push(`/admin/sheets/${sheetId}`);
   }
@@ -39,10 +38,6 @@ export default function NewSheetPage() {
         <p className="-mt-3 text-lg text-stone-500">
           {formatDateKorean(date)} 발주서가 만들어져요.
         </p>
-
-        <Field label="메모" hint="예: 월요일 발송분, 후숙 조금 더 된 것">
-          <input className={inputClass} value={memo} onChange={(e) => setMemo(e.target.value)} />
-        </Field>
 
         <div className="flex gap-3 pt-1">
           <BigButton variant="secondary" onClick={() => router.push("/admin/sheets")} className="flex-1">
