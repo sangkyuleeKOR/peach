@@ -74,46 +74,44 @@ export default function SheetDetailPage() {
 
   return (
     <main>
-      <Link
-        href="/admin/sheets"
-        className="no-print inline-flex items-center gap-1.5 text-lg font-bold text-stone-500 hover:text-stone-700 mb-4"
-      >
-        <ArrowLeft className="w-5 h-5" aria-hidden /> 발주서 목록
-      </Link>
-
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <div className="min-w-0">
-          <h1 className="text-3xl font-bold">{formatDateKorean(sheet.date)} 발주서</h1>
-          <p className="mt-1 text-lg text-stone-600">
-            {sheet.items.length}명 · 총 {totalBoxes}박스
-            {sheet.memo && <span className="ml-2 text-stone-400">· {sheet.memo}</span>}
-          </p>
-        </div>
-        <div className="no-print flex items-center gap-3 shrink-0">
-          <StatusBadge status={sheet.status} />
-          <button
-            onClick={async () => {
-              if (!window.confirm(`${formatDateKorean(sheet.date)} 발주서를 완전히 지울까요?`)) return;
-              if (await deleteSheet(sheetId)) router.push("/admin/sheets");
-            }}
-            aria-label="발주서 지우기"
-            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border-2 border-red-200 text-red-600 px-3 py-1.5 text-base font-bold cursor-pointer hover:bg-red-50"
-          >
-            <Trash2 className="w-4 h-4 shrink-0" aria-hidden /> 지우기
-          </button>
-        </div>
+      {/* 맨 윗줄: 뒤로가기 ↔ 지우기 (둘 다 조용하게, 양 끝으로) */}
+      <div className="no-print flex items-center justify-between mb-3">
+        <Link
+          href="/admin/sheets"
+          className="inline-flex items-center gap-1.5 text-lg font-bold text-stone-500 hover:text-stone-700"
+        >
+          <ArrowLeft className="w-5 h-5" aria-hidden /> 발주서 목록
+        </Link>
+        <button
+          onClick={async () => {
+            if (!window.confirm(`${formatDateKorean(sheet.date)} 발주서를 완전히 지울까요?`)) return;
+            if (await deleteSheet(sheetId)) router.push("/admin/sheets");
+          }}
+          className="inline-flex items-center gap-1 whitespace-nowrap text-base text-red-500 cursor-pointer hover:text-red-700"
+        >
+          <Trash2 className="w-4 h-4 shrink-0" aria-hidden /> 지우기
+        </button>
       </div>
 
-      {/* 도구 버튼: 휴대폰은 작은 3버튼, 넓은 화면은 한 줄 (발송 완료는 휴대폰에선 하단 고정) */}
-      <div className="no-print grid grid-cols-3 gap-3 mb-6 sm:flex sm:flex-wrap">
-        <BigButton variant="secondary" onClick={() => window.print()} className="max-sm:px-2 max-sm:text-base">
-          <Printer className="w-6 h-6 max-sm:w-5 max-sm:h-5" aria-hidden /> 인쇄
+      {/* 제목 + 상태·명수·박스수 한 줄 */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">{formatDateKorean(sheet.date)} 발주서</h1>
+        <p className="mt-2 flex items-center gap-3 flex-wrap">
+          <StatusBadge status={sheet.status} />
+          <span className="text-lg text-stone-600 tabular">
+            {sheet.items.length}명 · 총 {totalBoxes}박스
+            {sheet.memo && <span className="ml-1 text-stone-400">· {sheet.memo}</span>}
+          </span>
+        </p>
+      </div>
+
+      {/* 도구: 인쇄·엑셀만 (사람 추가는 표 아래로, 발송 완료는 휴대폰에선 하단 고정) */}
+      <div className="no-print grid grid-cols-2 gap-3 mb-6 sm:flex sm:flex-wrap">
+        <BigButton variant="secondary" onClick={() => window.print()}>
+          <Printer className="w-6 h-6" aria-hidden /> 인쇄
         </BigButton>
-        <BigButton variant="secondary" onClick={downloadCsv} className="max-sm:px-2 max-sm:text-base">
-          <Download className="w-6 h-6 max-sm:w-5 max-sm:h-5" aria-hidden /> 엑셀
-        </BigButton>
-        <BigButton variant="secondary" onClick={() => setAdding((v) => !v)} className="max-sm:px-2 max-sm:text-base">
-          <UserPlus className="w-6 h-6 max-sm:w-5 max-sm:h-5" aria-hidden /> 사람 추가
+        <BigButton variant="secondary" onClick={downloadCsv}>
+          <Download className="w-6 h-6" aria-hidden /> 엑셀로 받기
         </BigButton>
         <div className="hidden sm:block">
           {sheet.status === "작성중" ? (
@@ -127,12 +125,6 @@ export default function SheetDetailPage() {
           )}
         </div>
       </div>
-
-      {adding && (
-        <div className="no-print rounded-2xl bg-white border-2 border-peach p-5 mb-6">
-          <PersonPicker people={db.people} pickedIds={pickedIds} onPick={addPerson} />
-        </div>
-      )}
 
       {/* 휴대폰: 미니 엑셀 표 — 줄을 누르면 수정 창이 올라온다 */}
       <div className="sm:hidden print:hidden">
@@ -170,23 +162,6 @@ export default function SheetDetailPage() {
           </table>
         </div>
         <p className="mt-2 text-center text-base text-stone-500">줄을 누르면 고칠 수 있어요</p>
-
-        {/* 발송 완료 — 스크롤해도 하단에 붙어 있음 */}
-        <div className="no-print sticky bottom-24 z-10 mt-4">
-          {sheet.status === "작성중" ? (
-            <BigButton onClick={() => patchSheet({ status: "발송완료" })} className="w-full text-xl shadow-lg">
-              <CircleCheck className="w-6 h-6" aria-hidden /> 발송 완료하기
-            </BigButton>
-          ) : (
-            <BigButton
-              variant="secondary"
-              onClick={() => patchSheet({ status: "작성중" })}
-              className="w-full shadow-lg"
-            >
-              발송 완료 취소
-            </BigButton>
-          )}
-        </div>
       </div>
 
       {/* 태블릿·컴퓨터·인쇄: 엑셀식 표 */}
@@ -260,6 +235,48 @@ export default function SheetDetailPage() {
             </tr>
           </tfoot>
         </table>
+      </div>
+
+      {/* 사람 추가 — 엑셀에서 줄 추가하듯 표 바로 아래에서 */}
+      <div className="no-print mt-4">
+        {adding ? (
+          <div className="rounded-2xl bg-white border-2 border-peach p-5">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xl font-bold">보낼 사람 담기</p>
+              <button
+                onClick={() => setAdding(false)}
+                className="text-base font-bold text-stone-500 cursor-pointer hover:text-stone-700"
+              >
+                닫기
+              </button>
+            </div>
+            <PersonPicker people={db.people} pickedIds={pickedIds} onPick={addPerson} />
+          </div>
+        ) : (
+          <button
+            onClick={() => setAdding(true)}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-line bg-white/50 py-4 text-lg font-bold text-stone-500 cursor-pointer hover:border-peach hover:text-peach-dark transition-colors"
+          >
+            <UserPlus className="w-6 h-6" aria-hidden /> 사람 추가
+          </button>
+        )}
+      </div>
+
+      {/* 휴대폰: 발송 완료 — 스크롤해도 하단에 붙어 있음 */}
+      <div className="no-print sm:hidden sticky bottom-24 z-10 mt-5">
+        {sheet.status === "작성중" ? (
+          <BigButton onClick={() => patchSheet({ status: "발송완료" })} className="w-full text-xl shadow-lg">
+            <CircleCheck className="w-6 h-6" aria-hidden /> 발송 완료하기
+          </BigButton>
+        ) : (
+          <BigButton
+            variant="secondary"
+            onClick={() => patchSheet({ status: "작성중" })}
+            className="w-full shadow-lg"
+          >
+            발송 완료 취소
+          </BigButton>
+        )}
       </div>
 
       {/* 줄 수정 창 (휴대폰) */}
