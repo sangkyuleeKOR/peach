@@ -24,7 +24,8 @@ export default function PeoplePage() {
     return db.people
       .map((p) => ({
         p,
-        key: `${p.name} ${p.phone.replace(/\D/g, "")} ${p.referrer}`.normalize("NFC"),
+        // 검색 대상은 이름과 전화번호만 (연고인은 검색 안 함)
+        key: `${p.name} ${p.phone.replace(/\D/g, "")}`.normalize("NFC"),
       }))
       .sort((a, b) => collator.compare(a.p.name, b.p.name));
   }, [db]);
