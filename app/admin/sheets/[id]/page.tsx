@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, CircleCheck, Download, Printer, Trash2, UserPlus } from "lucide-react";
+import { ArrowLeft, CircleCheck, Download, Trash2, UserPlus } from "lucide-react";
 import { PersonPicker } from "@/components/person-picker";
 import { BigButton, Loading, ProductChips, QuantityStepper, StatusBadge } from "@/components/ui";
 import { formatPhone } from "@/lib/format";
@@ -95,7 +95,11 @@ export default function SheetDetailPage() {
 
       {/* 제목 + 상태·명수·박스수 한 줄 */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">{formatDateKorean(sheet.date)} 발주서</h1>
+        {/* 휴대폰에선 연도를 빼서 한 줄에 들어가게 */}
+        <h1 className="text-2xl sm:text-3xl font-bold whitespace-nowrap">
+          <span className="sm:hidden">{formatDateKorean(sheet.date).replace(/^\d+년 /, "")}</span>
+          <span className="hidden sm:inline">{formatDateKorean(sheet.date)}</span> 발주서
+        </h1>
         <p className="mt-2 flex items-center gap-3 flex-wrap">
           <StatusBadge status={sheet.status} />
           <span className="text-lg text-stone-600 tabular">
@@ -105,12 +109,9 @@ export default function SheetDetailPage() {
         </p>
       </div>
 
-      {/* 도구: 인쇄·엑셀만 (사람 추가는 표 아래로, 발송 완료는 휴대폰에선 하단 고정) */}
-      <div className="no-print grid grid-cols-2 gap-3 mb-6 sm:flex sm:flex-wrap">
-        <BigButton variant="secondary" onClick={() => window.print()}>
-          <Printer className="w-6 h-6" aria-hidden /> 인쇄
-        </BigButton>
-        <BigButton variant="secondary" onClick={downloadCsv}>
+      {/* 도구: 엑셀 받기 (발송 완료는 휴대폰에선 하단 고정) */}
+      <div className="no-print flex gap-3 mb-6 flex-wrap">
+        <BigButton variant="secondary" onClick={downloadCsv} className="flex-1 sm:flex-none">
           <Download className="w-6 h-6" aria-hidden /> 엑셀로 받기
         </BigButton>
         <div className="hidden sm:block">
@@ -132,8 +133,8 @@ export default function SheetDetailPage() {
           <table className="excel-table">
             <thead>
               <tr>
-                <th>이름</th>
-                <th className="w-[1%]">상품</th>
+                <th className="w-[1%]">이름</th>
+                <th>상품</th>
                 <th className="w-[1%]">수량</th>
               </tr>
             </thead>
@@ -144,13 +145,37 @@ export default function SheetDetailPage() {
                   onClick={() => setEditingItemId(i.id)}
                   className="cursor-pointer"
                 >
-                  <td className="font-bold">{i.name}</td>
-                  <td className="whitespace-nowrap text-base">
-                    {i.product.replace("복숭아 ", "") || "—"}
-                  </td>
+                  <td className="font-bold whitespace-nowrap">{i.name}</td>
+                  <td className="text-base">{i.product || "—"}</td>
                   <td className="tabular text-center">{i.quantity}</td>
                 </tr>
               ))}
+              {/* 사람 추가 — 표의 마지막 줄에서 바로 */}
+              <tr className="no-print">
+                <td colSpan={3} className="!p-2">
+                  {adding ? (
+                    <div className="p-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-lg font-bold">보낼 사람 담기</p>
+                        <button
+                          onClick={() => setAdding(false)}
+                          className="text-base font-bold text-stone-500 cursor-pointer hover:text-stone-700"
+                        >
+                          닫기
+                        </button>
+                      </div>
+                      <PersonPicker people={db.people} pickedIds={pickedIds} onPick={addPerson} />
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setAdding(true)}
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line py-3 text-lg font-bold text-stone-400 cursor-pointer hover:border-peach hover:text-peach-dark transition-colors"
+                    >
+                      <UserPlus className="w-5 h-5" aria-hidden /> 사람 추가
+                    </button>
+                  )}
+                </td>
+              </tr>
             </tbody>
             <tfoot>
               <tr>
@@ -223,6 +248,32 @@ export default function SheetDetailPage() {
                 </td>
               </tr>
             ))}
+            {/* 사람 추가 — 표의 마지막 줄에서 바로 */}
+            <tr className="no-print">
+              <td colSpan={7} className="!p-2">
+                {adding ? (
+                  <div className="p-2 max-w-2xl">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-lg font-bold">보낼 사람 담기</p>
+                      <button
+                        onClick={() => setAdding(false)}
+                        className="text-base font-bold text-stone-500 cursor-pointer hover:text-stone-700"
+                      >
+                        닫기
+                      </button>
+                    </div>
+                    <PersonPicker people={db.people} pickedIds={pickedIds} onPick={addPerson} />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setAdding(true)}
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line py-3 text-lg font-bold text-stone-400 cursor-pointer hover:border-peach hover:text-peach-dark transition-colors"
+                  >
+                    <UserPlus className="w-5 h-5" aria-hidden /> 사람 추가
+                  </button>
+                )}
+              </td>
+            </tr>
           </tbody>
           <tfoot>
             <tr>
@@ -235,31 +286,6 @@ export default function SheetDetailPage() {
             </tr>
           </tfoot>
         </table>
-      </div>
-
-      {/* 사람 추가 — 엑셀에서 줄 추가하듯 표 바로 아래에서 */}
-      <div className="no-print mt-4">
-        {adding ? (
-          <div className="rounded-2xl bg-white border-2 border-peach p-5">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xl font-bold">보낼 사람 담기</p>
-              <button
-                onClick={() => setAdding(false)}
-                className="text-base font-bold text-stone-500 cursor-pointer hover:text-stone-700"
-              >
-                닫기
-              </button>
-            </div>
-            <PersonPicker people={db.people} pickedIds={pickedIds} onPick={addPerson} />
-          </div>
-        ) : (
-          <button
-            onClick={() => setAdding(true)}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-line bg-white/50 py-4 text-lg font-bold text-stone-500 cursor-pointer hover:border-peach hover:text-peach-dark transition-colors"
-          >
-            <UserPlus className="w-6 h-6" aria-hidden /> 사람 추가
-          </button>
-        )}
       </div>
 
       {/* 휴대폰: 발송 완료 — 스크롤해도 하단에 붙어 있음 */}
