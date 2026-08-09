@@ -56,14 +56,14 @@ export function PersonPicker({
             const picked = pickedIds.has(p.id);
             return (
               <li key={p.id}>
+                {/* 같은 사람을 여러 번 담을 수 있다 (다른 상품을 보낼 때) */}
                 <button
                   type="button"
-                  disabled={picked}
                   onClick={() => {
                     onPick(p);
                     setQuery("");
                   }}
-                  className="w-full text-left px-5 py-3.5 cursor-pointer hover:bg-peach-soft disabled:cursor-default disabled:bg-leaf-soft/40 transition-colors"
+                  className="w-full text-left px-5 py-3.5 cursor-pointer hover:bg-peach-soft transition-colors"
                 >
                   <span className="flex items-center justify-between gap-3">
                     <span className="min-w-0">
@@ -73,7 +73,7 @@ export function PersonPicker({
                     </span>
                     {picked ? (
                       <span className="shrink-0 inline-flex items-center gap-1 text-leaf font-bold text-base">
-                        <CircleCheck className="w-5 h-5" aria-hidden /> 담았음
+                        <CircleCheck className="w-5 h-5" aria-hidden /> 한 번 더 담기 +
                       </span>
                     ) : (
                       <span className="shrink-0 text-peach-dark font-bold text-lg">담기 +</span>

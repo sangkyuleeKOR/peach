@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
 import { EmptyState, Loading, PageTitle, StatusBadge } from "@/components/ui";
 import { formatDateKorean, useDB } from "@/lib/store";
@@ -87,18 +88,24 @@ export default function SalesPage() {
       <div className="flex items-start justify-between gap-4">
         <PageTitle sub="발주서에 적은 수량과 상품 가격으로 계산해요">매출</PageTitle>
         {/* 연도 선택 */}
-        <select
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-          aria-label="연도 선택"
-          className="shrink-0 h-14 rounded-xl border-2 border-line bg-white px-3 text-lg font-bold cursor-pointer"
-        >
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}년
-            </option>
-          ))}
-        </select>
+        <div className="relative shrink-0">
+          <select
+            value={year}
+            onChange={(e) => setYear(e.target.value)}
+            aria-label="연도 선택"
+            className="appearance-none h-14 rounded-xl border-2 border-line bg-white pl-4 pr-11 text-lg font-bold cursor-pointer"
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}년
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-500"
+            aria-hidden
+          />
+        </div>
       </div>
 
       {/* 달 고르기 — 달력처럼 줄 맞춰서. 발주서 있는 달엔 점이 찍혀요 */}
@@ -166,55 +173,36 @@ export default function SalesPage() {
             </div>
           </div>
 
-          {/* 일 년 전체를 볼 때만: 달별 표 */}
+          {/* 일 년 전체를 볼 때만: 달별 매출 (누르면 그 달로 이동) */}
           {month === "all" && (
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-3">달별 매출</h2>
-              <div className="overflow-x-auto rounded-xl border border-line bg-white">
-                <table className="excel-table">
-                  <thead>
-                    <tr>
-                      <th className="w-[1%]">달</th>
-                      <th className="w-[1%]">박스</th>
-                      <th className="w-[1%]">매출</th>
-                      <th>
-                        <span className="sr-only">매출 크기 비교</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.months.map(([m, v]) => (
-                      <tr key={m}>
-                        <td className="whitespace-nowrap">
-                          <button
-                            onClick={() => setMonth(m)}
-                            className="font-bold text-peach-dark underline underline-offset-4 cursor-pointer"
-                          >
-                            {m}월
-                          </button>
-                        </td>
-                        <td className="tabular">{v.boxes}</td>
-                        <td className="tabular whitespace-nowrap">{won(v.revenue)}</td>
-                        <td className="hidden sm:table-cell w-full min-w-40">
-                          <div
-                            className="h-6 rounded-r bg-peach"
-                            style={{ width: `${Math.max(2, (v.revenue / maxMonthRevenue) * 100)}%` }}
-                            aria-hidden
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td className="font-bold">합계</td>
-                      <td className="font-bold tabular">{stats.total.boxes}</td>
-                      <td className="font-bold tabular whitespace-nowrap" colSpan={2}>
-                        {won(stats.total.revenue)}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
+              <div className="space-y-2">
+                {stats.months.map(([m, v]) => (
+                  <button
+                    key={m}
+                    onClick={() => setMonth(m)}
+                    className="w-full flex items-center gap-3 rounded-xl bg-white border border-line px-4 py-3.5 cursor-pointer hover:border-peach transition-colors"
+                  >
+                    <span className="w-11 shrink-0 text-left text-lg font-bold">{m}월</span>
+                    <span className="flex-1 h-5 rounded-r-md bg-stone-100 overflow-hidden" aria-hidden>
+                      <span
+                        className="block h-full rounded-r-md bg-peach"
+                        style={{ width: `${Math.max(3, (v.revenue / maxMonthRevenue) * 100)}%` }}
+                      />
+                    </span>
+                    <span className="shrink-0 text-right">
+                      <span className="block tabular text-lg font-bold leading-tight">{won(v.revenue)}</span>
+                      <span className="block tabular text-sm text-stone-500 leading-tight">{v.boxes}박스</span>
+                    </span>
+                  </button>
+                ))}
+                <div className="flex items-center justify-between rounded-xl bg-stone-100 px-4 py-3.5">
+                  <span className="text-lg font-bold">합계</span>
+                  <span className="tabular text-lg font-bold">
+                    {stats.total.boxes}박스 · {won(stats.total.revenue)}
+                  </span>
+                </div>
               </div>
             </section>
           )}

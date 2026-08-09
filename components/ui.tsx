@@ -134,13 +134,44 @@ export function Loading({ error }: { error?: boolean }) {
 export function StatusBadge({ status }: { status: string }) {
   const color =
     status === "발송완료" || status === "발주완료"
-      ? "bg-leaf-soft text-leaf"
-      : status === "신규"
-        ? "bg-peach-soft text-peach-dark"
-        : "bg-stone-100 text-stone-600";
+      ? "bg-green-100 text-green-800 border-green-300"
+      : "bg-orange-100 text-orange-800 border-orange-300";
   return (
-    <span className={`inline-block rounded-lg px-3 py-1 text-base font-bold ${color}`}>
+    <span className={`inline-block whitespace-nowrap rounded-lg border px-3 py-1 text-base font-bold ${color}`}>
       {status}
     </span>
+  );
+}
+
+/** 상품 고르기 — 드롭다운 대신 눌러서 고르는 버튼 (수량 버튼과 같은 높이) */
+export function ProductChips({
+  options,
+  value,
+  onChange,
+  label,
+}: {
+  options: string[];
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+}) {
+  const opts = !value || options.includes(value) ? options : [value, ...options];
+  return (
+    <div className="flex flex-wrap gap-2" role="group" aria-label={label}>
+      {opts.map((t) => (
+        <button
+          key={t}
+          type="button"
+          onClick={() => onChange(t)}
+          className={`rounded-xl border-2 px-4 min-h-14 text-lg font-bold cursor-pointer transition-colors ${
+            value === t
+              ? "border-peach bg-peach-soft text-peach-dark"
+              : "border-line bg-white text-stone-500 hover:border-peach"
+          }`}
+        >
+          {t || "상품 없음"}
+        </button>
+      ))}
+    </div>
   );
 }

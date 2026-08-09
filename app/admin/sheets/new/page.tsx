@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { PersonPicker } from "@/components/person-picker";
-import { BigButton, Field, Loading, PageTitle, QuantityStepper, inputClass } from "@/components/ui";
+import { BigButton, Field, Loading, PageTitle, ProductChips, QuantityStepper, inputClass } from "@/components/ui";
 import { formatDateKorean, newId, today, useDB } from "@/lib/store";
 import type { Person, SheetItem } from "@/lib/types";
 
@@ -114,22 +114,13 @@ export default function NewSheetPage() {
                       <Trash2 className="w-5 h-5" aria-hidden />
                     </button>
                   </div>
-                  <div className="mt-3 flex items-center gap-3 flex-wrap">
-                    <select
-                      className="h-14 rounded-xl border-2 border-line px-3 text-lg bg-white cursor-pointer"
+                  <div className="mt-3 space-y-2.5">
+                    <ProductChips
+                      options={productNames}
                       value={i.product}
-                      onChange={(e) => patchItem(i.id, { product: e.target.value })}
-                      aria-label={`${i.name} 상품`}
-                    >
-                      {!productNames.includes(i.product) && (
-                        <option value={i.product}>{i.product || "상품 없음"}</option>
-                      )}
-                      {productNames.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(v) => patchItem(i.id, { product: v })}
+                      label={`${i.name} 상품`}
+                    />
                     <QuantityStepper value={i.quantity} onChange={(v) => patchItem(i.id, { quantity: v })} />
                   </div>
                 </div>

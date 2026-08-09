@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { ChevronRight, Pencil, Search, Trash2, UserPlus } from "lucide-react";
 import { BigButton, EmptyState, Field, Loading, PageTitle, inputClass } from "@/components/ui";
 import { formatPhone, formatPhoneInput } from "@/lib/format";
@@ -13,22 +13,33 @@ type Editing = { mode: "new" } | { mode: "edit"; person: Person } | null;
 export default function PeoplePage() {
   const { db, loadError, addPerson, updatePerson, deletePerson } = useDB();
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query); // 타이핑이 끊기지 않게 검색은 한 박자 늦게
+  const [limit, setLimit] = useState(100); // 한 번에 그리는 사람 수 (렉 방지)
   const [editing, setEditing] = useState<Editing>(null);
 
-  const filtered = useMemo(() => {
+  // 정렬과 검색용 문자열은 데이터가 바뀔 때 한 번만 준비
+  const sorted = useMemo(() => {
     if (!db) return [];
-    const q = query.trim().normalize("NFC");
+    const collator = new Intl.Collator("ko");
+    return db.people
+      .map((p) => ({
+        p,
+        key: `${p.name} ${p.phone.replace(/\D/g, "")} ${p.referrer}`.normalize("NFC"),
+      }))
+      .sort((a, b) => collator.compare(a.p.name, b.p.name));
+  }, [db]);
+
+  const filtered = useMemo(() => {
+    const q = deferredQuery.trim().normalize("NFC");
+    if (!q) return sorted.map((x) => x.p);
     const digits = q.replace(/\D/g, "");
-    const list = q
-      ? db.people.filter(
-          (p) =>
-            p.name.normalize("NFC").includes(q) ||
-            (digits && p.phone.replace(/\D/g, "").includes(digits)) ||
-            p.referrer.normalize("NFC").includes(q),
-        )
-      : db.people;
-    return [...list].sort((a, b) => a.name.localeCompare(b.name, "ko"));
-  }, [db, query]);
+    return sorted
+      .filter(({ key }) => key.includes(q) || (digits.length >= 2 && key.includes(digits)))
+      .map((x) => x.p);
+  }, [sorted, deferredQuery]);
+
+  useEffect(() => setLimit(100), [deferredQuery]);
+  const visible = filtered.slice(0, limit);
 
   if (!db) return <Loading error={loadError} />;
 
@@ -88,7 +99,7 @@ export default function PeoplePage() {
         <>
         {/* 휴대폰: 카드 — 누르면 수정 창이 열림 */}
         <div className="sm:hidden space-y-3">
-          {filtered.map((p) => (
+          {visible.map((p) => (
             <button
               key={p.id}
               onClick={() => setEditing({ mode: "edit", person: p })}
@@ -124,7 +135,7 @@ export default function PeoplePage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => (
+              {visible.map((p) => (
                 <tr key={p.id}>
                   <td className="font-bold whitespace-nowrap">{p.name}</td>
                   <td className="tabular whitespace-nowrap">{formatPhone(p.phone)}</td>
@@ -145,6 +156,15 @@ export default function PeoplePage() {
             </tbody>
           </table>
         </div>
+
+        {/* 나머지는 눌러서 더 보기 (한꺼번에 다 그리면 느려짐) */}
+        {filtered.length > limit && (
+          <div className="mt-4 text-center">
+            <BigButton variant="secondary" onClick={() => setLimit((l) => l + 200)}>
+              더 보기 ({(filtered.length - limit).toLocaleString("ko-KR")}명 남음)
+            </BigButton>
+          </div>
+        )}
         </>
       )}
 

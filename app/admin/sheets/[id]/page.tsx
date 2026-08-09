@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowLeft, CircleCheck, Download, Printer, Trash2, UserPlus } from "lucide-react";
 import { PersonPicker } from "@/components/person-picker";
-import { BigButton, Loading, QuantityStepper, StatusBadge } from "@/components/ui";
+import { BigButton, Loading, ProductChips, QuantityStepper, StatusBadge } from "@/components/ui";
 import { formatPhone } from "@/lib/format";
 import { formatDateKorean, newId, useDB } from "@/lib/store";
 import type { OrderSheet, Person, SheetItem } from "@/lib/types";
@@ -80,15 +80,27 @@ export default function SheetDetailPage() {
         <ArrowLeft className="w-5 h-5" aria-hidden /> 발주서 목록
       </Link>
 
-      <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
-        <div>
+      <div className="flex items-start justify-between gap-4 mb-6">
+        <div className="min-w-0">
           <h1 className="text-3xl font-bold">{formatDateKorean(sheet.date)} 발주서</h1>
           <p className="mt-1 text-lg text-stone-600">
             {sheet.items.length}명 · 총 {totalBoxes}박스
             {sheet.memo && <span className="ml-2 text-stone-400">· {sheet.memo}</span>}
           </p>
         </div>
-        <StatusBadge status={sheet.status} />
+        <div className="no-print flex items-center gap-3 shrink-0">
+          <StatusBadge status={sheet.status} />
+          <button
+            onClick={async () => {
+              if (!window.confirm(`${formatDateKorean(sheet.date)} 발주서를 완전히 지울까요?`)) return;
+              if (await deleteSheet(sheetId)) router.push("/admin/sheets");
+            }}
+            aria-label="발주서 지우기"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border-2 border-red-200 text-red-600 px-3 py-1.5 text-base font-bold cursor-pointer hover:bg-red-50"
+          >
+            <Trash2 className="w-4 h-4 shrink-0" aria-hidden /> 지우기
+          </button>
+        </div>
       </div>
 
       {/* 도구 버튼: 휴대폰은 2×2 같은 크기, 넓은 화면은 한 줄 */}
@@ -143,22 +155,13 @@ export default function SheetDetailPage() {
               </button>
             </div>
             <p className="mt-2 text-lg text-stone-700">{i.address}</p>
-            <div className="mt-3 flex items-center gap-3 flex-wrap">
-              <select
-                className="h-14 rounded-xl border-2 border-line px-3 text-lg bg-white cursor-pointer"
+            <div className="mt-3 space-y-2.5">
+              <ProductChips
+                options={productNames}
                 value={i.product}
-                onChange={(e) => patchItem(i.id, { product: e.target.value })}
-                aria-label={`${i.name} 상품`}
-              >
-                {!productNames.includes(i.product) && (
-                  <option value={i.product}>{i.product || "상품 없음"}</option>
-                )}
-                {productNames.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => patchItem(i.id, { product: v })}
+                label={`${i.name} 상품`}
+              />
               <QuantityStepper value={i.quantity} onChange={(v) => patchItem(i.id, { quantity: v })} />
             </div>
           </div>
@@ -242,18 +245,6 @@ export default function SheetDetailPage() {
         </table>
       </div>
 
-      {/* 지우기: 목록에서 빼고 여기(발주서 안)에서만 */}
-      <div className="no-print mt-10">
-        <button
-          onClick={async () => {
-            if (!window.confirm(`${formatDateKorean(sheet.date)} 발주서를 완전히 지울까요?`)) return;
-            if (await deleteSheet(sheetId)) router.push("/admin/sheets");
-          }}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border-2 border-red-200 text-red-600 text-lg font-bold px-6 py-3 cursor-pointer hover:bg-red-50"
-        >
-          <Trash2 className="w-5 h-5" aria-hidden /> 이 발주서 지우기
-        </button>
-      </div>
     </main>
   );
 }
