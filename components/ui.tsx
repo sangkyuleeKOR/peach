@@ -31,7 +31,7 @@ export function BigButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 min-h-[3.25rem] text-lg font-bold cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-4 focus-visible:outline-peach/50 ${styles} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 min-h-14 text-lg font-bold cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-4 focus-visible:outline-peach/50 ${styles} ${className}`}
     >
       {children}
     </button>

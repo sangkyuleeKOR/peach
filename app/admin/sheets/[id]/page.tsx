@@ -337,20 +337,12 @@ function ItemEditSheet({
         className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-2xl p-6 space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-2xl font-bold">
-            {item.name}
-            <span className="ml-3 tabular text-lg font-normal text-stone-500">
-              {formatPhone(item.phone)}
-            </span>
-          </p>
-          <button
-            onClick={onRemove}
-            className="shrink-0 whitespace-nowrap text-red-600 text-base font-bold cursor-pointer hover:underline underline-offset-4"
-          >
-            이 줄 빼기
-          </button>
-        </div>
+        <p className="text-2xl font-bold">
+          {item.name}
+          <span className="ml-3 tabular text-lg font-normal text-stone-500">
+            {formatPhone(item.phone)}
+          </span>
+        </p>
         <p className="text-lg text-stone-600">{item.address}</p>
         <ProductChips
           options={productNames}
@@ -358,9 +350,12 @@ function ItemEditSheet({
           onChange={(v) => onChange({ product: v })}
           label={`${item.name} 상품`}
         />
-        <div className="flex items-center gap-3">
-          <QuantityStepper value={item.quantity} onChange={(v) => onChange({ quantity: v })} />
-          <BigButton onClick={onClose} className="flex-1">
+        <QuantityStepper value={item.quantity} onChange={(v) => onChange({ quantity: v })} />
+        <div className="flex items-center gap-3 pt-1">
+          <BigButton variant="danger" onClick={onRemove} className="flex-1">
+            <Trash2 className="w-5 h-5" aria-hidden /> 삭제
+          </BigButton>
+          <BigButton onClick={onClose} className="flex-[2]">
             확인
           </BigButton>
         </div>
