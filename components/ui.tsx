@@ -85,7 +85,8 @@ export function QuantityStepper({
       >
         <Minus className="w-6 h-6" />
       </button>
-      <span className="w-16 text-center text-2xl font-bold tabular">{value}</span>
+      {/* 상품 버튼과 같은 글자 크기 */}
+      <span className="w-14 text-center text-lg font-bold tabular">{value}</span>
       <button
         type="button"
         aria-label="수량 늘리기"
